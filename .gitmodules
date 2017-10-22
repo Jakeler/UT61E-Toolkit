@@ -1,0 +1,3 @@
+[submodule "ut61e_decoder_lib"]
+	path = ut61e_decoder_lib
+	url = git@github.com:Jakeler/ut61e_decoder.git

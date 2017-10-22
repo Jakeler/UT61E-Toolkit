@@ -14,7 +14,7 @@
  limitations under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="jk.ut61eLogger"
+    package="jk.ut61eTool"
     android:versionCode="1"
     android:versionName="1.0">
 
@@ -59,7 +59,7 @@
 
         <activity
             android:name="jk.ut61eTool.SettingsActivity"
-            android:label="@string/title_activity_settings"></activity>
+            android:label="@string/title_activity_settings"/>
     </application>
 
 </manifest>

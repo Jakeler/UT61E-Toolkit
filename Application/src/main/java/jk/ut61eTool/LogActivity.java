@@ -310,7 +310,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
         logData(ut61e.toCSVString());
         points++;
-        if (isAlarm(ut61e.value)) {
+        if (isAlarm(ut61e.getValue())) {
             alarm(ut61e.toString());
         }
 
@@ -375,7 +375,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     private void displayData(UT61e_decoder ut61e) {
         mDataField.setText(ut61e.toString());
 
-        enableTextView(neg, ut61e.value < 0);
+        enableTextView(neg, ut61e.getValue() < 0);
         enableTextView(ol, ut61e.isOL());
         if (ut61e.isFreq() || ut61e.isDuty()) {
             enableTextView(freqDuty, true);
@@ -394,7 +394,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
             }
         }
 
-        graph.getBarData().getDataSetByIndex(0).addEntry(new BarEntry(points, (float)ut61e.value, ut61e.unit_str));
+        graph.getBarData().getDataSetByIndex(0).addEntry(new BarEntry(points, (float)ut61e.getValue(), ut61e.unit_str));
         while (graph.getBarData().getDataSetByIndex(0).getEntryCount() > viewSize) {
             graph.getBarData().getDataSetByIndex(0).removeFirst();
         }

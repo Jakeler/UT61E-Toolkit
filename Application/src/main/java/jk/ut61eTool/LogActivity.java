@@ -44,11 +44,11 @@ import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import com.jake.UT61e_decoder;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.jake.UT61e_decoder;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -301,9 +301,18 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     }
 
     private void decodeData(byte[] data) {
+//        String debug = "{";
+//        for (int i = 0; i < data.length; i++) {
+//            debug += data[i];
+//            if (i != data.length-1) {
+//                debug += ", ";
+//            }
+//        }
+//        debug += "}";
+//        Log.d("TEST", debug);
+
         UT61e_decoder ut61e = new UT61e_decoder();
         if (!ut61e.parse(data)) {
-            Log.e("E", "faulty data rec");
             return;
         }
         displayData(ut61e);
@@ -314,24 +323,31 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
             alarm(ut61e.toString());
         }
 
-//        double sum = 0;
-//        int n = 0;
-//        Iterator<DataPoint> it = series.getValues(points - viewSize, points);
-//        while (it.hasNext()) {
-//            sum += it.next().getY();
-//            n++;
-//        }
-//        double avg = sum / n;
-//        sum = 0;
-//        it = series.getValues(points - viewSize, points);
-//        while (it.hasNext()) {
-//            sum += Math.abs(it.next().getY() - avg);
-//        }
-//        double stdDev = sum / n;
-//
-//        dataInfo.setText("Max: " + graph.getViewport().getMaxY(false) + " | Min: " + graph.getViewport().getMinY(false)
-//                + " | Avg: " + double2String(avg) + " | Std.dev: " + double2String(stdDev));
 
+        int lowX = (int)(graph.getLowestVisibleX()+0.5);
+        int highX = (int)(graph.getHighestVisibleX()+0.5);
+        List<BarEntry> viewData = new ArrayList<>();
+        for (int i = lowX; i < highX; i++) {
+            viewData.add(graph.getBarData().getDataSetByIndex(0).getEntriesForXValue(i).get(0));
+        }
+
+        double sum = 0, min = viewData.get(0).getY(), max = min;
+        for (BarEntry e : viewData) {
+            float value = e.getY();
+            sum += value;
+            min = value < min? value : min;
+            max = value > max? value : max;
+        }
+        double avg = sum / viewData.size();
+
+        sum = 0;
+        for (BarEntry e : viewData) {
+            sum += Math.abs(e.getY() - avg);
+        }
+        double stdDev = sum / viewData.size();
+
+        dataInfo.setText("Max: " + double2String(max) + " | Min: " + double2String(min)
+                + " | Avg: " + double2String(avg) + " | Std.dev: " + double2String(stdDev));
     }
 
 
@@ -394,7 +410,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
             }
         }
 
-        graph.getBarData().getDataSetByIndex(0).addEntry(new BarEntry(points, (float)ut61e.getValue(), ut61e.unit_str));
+        graph.getBarData().getDataSetByIndex(0).addEntry(new BarEntry(points, (float) ut61e.getValue(), ut61e.unit_str));
         while (graph.getBarData().getDataSetByIndex(0).getEntryCount() > viewSize) {
             graph.getBarData().getDataSetByIndex(0).removeFirst();
         }
@@ -402,7 +418,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         graph.notifyDataSetChanged();
         graph.invalidate();
     }
-
 
     private void putNotify(int points) {
         NotificationCompat.Builder mBuilder =

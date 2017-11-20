@@ -41,25 +41,27 @@
         android:label="@string/app_name"
         android:theme="@style/Theme.Base">
         <activity
-            android:name="jk.ut61eTool.DeviceScanActivity"
-            android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:name=".DeviceScanActivity"
+            android:label="@string/app_name"/>
         <activity
-            android:name="jk.ut61eTool.LogActivity"
+            android:name=".LogActivity"
             android:launchMode="singleTask" />
 
         <service
-            android:name="jk.ut61eTool.BluetoothLeService"
+            android:name=".BluetoothLeService"
             android:enabled="true" />
 
         <activity
-            android:name="jk.ut61eTool.SettingsActivity"
-            android:label="@string/title_activity_settings"/>
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings" />
+
+        <activity android:name=".StartActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
     </application>
 
 </manifest>

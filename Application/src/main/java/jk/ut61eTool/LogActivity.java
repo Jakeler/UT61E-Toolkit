@@ -38,6 +38,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -48,6 +49,8 @@ import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.listener.ChartTouchListener;
+import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.jake.UT61e_decoder;
 
 import java.io.File;
@@ -66,7 +69,7 @@ import java.util.UUID;
  * communicates with {@code BluetoothLeService}, which in turn interacts with the
  * Bluetooth LE API.
  */
-public class LogActivity extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class LogActivity extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener, OnChartGestureListener {
     private final static String TAG = LogActivity.class.getSimpleName();
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
@@ -162,8 +165,8 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     public void reconnect() {
         if (auto_reconnect) {
             mBluetoothLeService.connect(mDeviceAddress);
+            Log.i(TAG, "reconnect: " + auto_reconnect);
         }
-        Log.i(TAG, "reconnect: ");
     }
 
     @Override
@@ -237,7 +240,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         dataSet.setColor(Color.BLUE);
         BarData data = new BarData(dataSet);
         graph.setData(data);
-
+        graph.setOnChartGestureListener(this);
     }
 
     @Override
@@ -316,6 +319,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
             return;
         }
         displayData(ut61e);
+        updateDataInfo();
 
         logData(ut61e.toCSVString());
         points++;
@@ -323,32 +327,9 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
             alarm(ut61e.toString());
         }
 
-
-        int lowX = (int)(graph.getLowestVisibleX()+0.5);
-        int highX = (int)(graph.getHighestVisibleX()+0.5);
-        List<BarEntry> viewData = new ArrayList<>();
-        for (int i = lowX; i < highX; i++) {
-            viewData.add(graph.getBarData().getDataSetByIndex(0).getEntriesForXValue(i).get(0));
-        }
-
-        double sum = 0, min = viewData.get(0).getY(), max = min;
-        for (BarEntry e : viewData) {
-            float value = e.getY();
-            sum += value;
-            min = value < min? value : min;
-            max = value > max? value : max;
-        }
-        double avg = sum / viewData.size();
-
-        sum = 0;
-        for (BarEntry e : viewData) {
-            sum += Math.abs(e.getY() - avg);
-        }
-        double stdDev = sum / viewData.size();
-
-        dataInfo.setText("Max: " + double2String(max) + " | Min: " + double2String(min)
-                + " | Avg: " + double2String(avg) + " | Std.dev: " + double2String(stdDev));
     }
+
+
 
 
     private String double2String(double d) {
@@ -417,6 +398,33 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         graph.getBarData().notifyDataChanged();
         graph.notifyDataSetChanged();
         graph.invalidate();
+    }
+
+    private void updateDataInfo() {
+        int lowX = (int)(graph.getLowestVisibleX()+0.5);
+        int highX = (int)(graph.getHighestVisibleX()+0.5);
+        List<BarEntry> viewData = new ArrayList<>();
+        for (int i = lowX; i < highX; i++) {
+            viewData.add(graph.getBarData().getDataSetByIndex(0).getEntriesForXValue(i).get(0));
+        }
+
+        double sum = 0, min = viewData.get(0).getY(), max = min;
+        for (BarEntry e : viewData) {
+            float value = e.getY();
+            sum += value;
+            min = value < min? value : min;
+            max = value > max? value : max;
+        }
+        double avg = sum / viewData.size();
+
+        sum = 0;
+        for (BarEntry e : viewData) {
+            sum += Math.abs(e.getY() - avg);
+        }
+        double stdDev = sum / viewData.size();
+
+        dataInfo.setText("Max: " + double2String(max) + " | Min: " + double2String(min)
+                + " | Avg: " + double2String(avg) + " | Std.dev: " + double2String(stdDev));
     }
 
     private void putNotify(int points) {
@@ -555,4 +563,30 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
                 break;
         }
     }
+
+    @Override
+    public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+        updateDataInfo();
+    }
+
+    @Override
+    public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {}
+
+    @Override
+    public void onChartLongPressed(MotionEvent me) {}
+
+    @Override
+    public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {}
+
+    @Override
+    public void onChartDoubleTapped(MotionEvent me) {}
+
+    @Override
+    public void onChartSingleTapped(MotionEvent me) {}
+
+    @Override
+    public void onChartScale(MotionEvent me, float scaleX, float scaleY) {}
+
+    @Override
+    public void onChartTranslate(MotionEvent me, float dX, float dY){}
 }

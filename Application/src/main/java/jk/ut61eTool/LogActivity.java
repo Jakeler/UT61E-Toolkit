@@ -98,6 +98,8 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     private Toast startLogToast;
     private boolean mConnected = false;
     private UUID uuid;
+    private NotificationManager mNotifyMgr;
+
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -197,7 +199,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
-
+        mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
     }
 
     private void findViews() {
@@ -276,6 +278,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         if (fWriter != null) {
             stopLog();
         }
+        mNotifyMgr.cancelAll();
     }
 
     @Override
@@ -448,7 +451,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         mBuilder.setContentIntent(resultPendingIntent);
 
-        NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         mNotifyMgr.notify(1, mBuilder.build());
 
     }
@@ -506,7 +508,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
             fWriter = null;
             filename.setEnabled(true);
             logRunning.setIndeterminate(false);
-            NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             mNotifyMgr.cancel(1);
         } catch (IOException | NullPointerException e) {
             Toast.makeText(this, getString(R.string.storage_exp) + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -545,7 +546,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         mBuilder.setAutoCancel(true);
         mBuilder.setSound(Uri.parse(sound));
 
-        NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         mNotifyMgr.notify(17, mBuilder.build());
     }
 

@@ -27,6 +27,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -85,9 +86,8 @@ public class DeviceScanActivity extends ListActivity {
 
         }
 
-
+        // Check for coarse location permission to allow BLE scanning
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, R.string.location_permission_exp, Toast.LENGTH_LONG).show();
             ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION);
         }
     }
@@ -282,5 +282,14 @@ public class DeviceScanActivity extends ListActivity {
     static class ViewHolder {
         TextView deviceName;
         TextView deviceAddress;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+            Toast.makeText(this, R.string.location_permission_exp, Toast.LENGTH_LONG).show();
+            finish();
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }

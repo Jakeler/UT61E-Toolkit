@@ -16,6 +16,7 @@
 
 package jk.ut61eTool;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -28,13 +29,17 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -44,6 +49,7 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.data.BarData;
@@ -89,7 +95,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     String alarm_condition, sound;
     boolean auto_reconnect, alarm_enabled, vibration;
     double low_limit, high_limit;
-
+    private Toast startLogToast;
     private boolean mConnected = false;
     private UUID uuid;
     // Code to manage Service lifecycle.
@@ -442,8 +448,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         mBuilder.setContentIntent(resultPendingIntent);
 
-        NotificationManager mNotifyMgr =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         mNotifyMgr.notify(1, mBuilder.build());
 
     }
@@ -459,6 +464,9 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
 
     private void startLog() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 7);
+        }
 
         createFolder();
         logFile = new File(Environment.getExternalStorageDirectory() + File.separator + getString(R.string.log_folder) + File.separator + filename.getText());
@@ -466,6 +474,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         Map<String, ?> prefs = PreferenceManager.getDefaultSharedPreferences(this).getAll();
         Log.d(TAG, "PREFS: " + prefs.get("viewport"));
 
+        Switch sw = (Switch) findViewById(R.id.switch1);
         try {
             fWriter = new FileWriter(logFile, true);
             fWriter.write("### " + Calendar.getInstance().getTime().toString() + " ###\n");
@@ -474,8 +483,11 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
             filename.setEnabled(false);
             logRunning.setIndeterminate(true);
             lineCount = 0;
-        } catch (Exception e) {
-            e.printStackTrace();
+            sw.setChecked(true);
+        } catch (IOException e) {
+            startLogToast = Toast.makeText(this, getString(R.string.storage_exp) + e.getMessage(), Toast.LENGTH_LONG);
+            startLogToast.show();
+            sw.setChecked(false);
         }
     }
 
@@ -496,8 +508,8 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
             logRunning.setIndeterminate(false);
             NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             mNotifyMgr.cancel(1);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException | NullPointerException e) {
+            Toast.makeText(this, getString(R.string.storage_exp) + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -562,6 +574,17 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 //                Log.d(TAG, "new Viewport: " + graph.getViewport().getMaxX(false));
                 break;
         }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (startLogToast != null) {
+                startLogToast.cancel();
+            }
+            startLog();
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override

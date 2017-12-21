@@ -30,6 +30,10 @@
     <string name="unknown_characteristic">Unknown characteristic</string>
     <string name="unknown_service">Unknown service</string>
 
+    <string name="start_ble_search">Connect with BLE \nMultimeter</string>
+    <string name="start_log_view">View Recorded Log</string>
+    <string name="start_setting">Change Settings</string>
+
     <!-- Menu items -->
     <string name="menu_connect">Connect</string>
     <string name="menu_disconnect">Disconnect</string>

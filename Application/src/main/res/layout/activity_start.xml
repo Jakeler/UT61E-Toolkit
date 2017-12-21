@@ -5,38 +5,50 @@
     android:orientation="vertical">
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/startConnect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_column="0"
-        android:layout_columnWeight="1"
-        android:layout_rowWeight="1"
         android:layout_weight="2"
-        android:background="@android:color/holo_green_dark"
-        android:backgroundTintMode="add"
+        android:background="@android:color/holo_orange_dark"
         android:drawableStart="@drawable/ic_bluetooth_searching_black_64dp"
         android:onClick="startScan"
         android:paddingLeft="20dp"
         android:paddingRight="20dp"
-        android:text="Connect with BLE Multimeter" />
+        android:text="@string/start_ble_search"
+        android:textSize="18sp" />
 
     <Button
-        android:id="@+id/button5"
+        android:id="@+id/startLogView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_column="1"
-        android:layout_columnWeight="1"
-        android:layout_row="0"
-        android:layout_rowWeight="1"
         android:layout_weight="2"
+        android:background="@android:color/holo_green_dark"
+        android:drawableStart="@drawable/ic_folder_open_black_64dp"
         android:onClick="startView"
-        android:text="View recorded Log" />
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:text="@string/start_log_view"
+        android:textSize="18sp" />
+
+    <Button
+        android:id="@+id/startSettings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@android:color/darker_gray"
+        android:drawableStart="@drawable/ic_settings_black_64dp"
+        android:onClick="startView"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:text="@string/start_setting"
+        android:textSize="18sp" />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="2"
+        android:layout_weight="1"
+        android:padding="10dp"
         android:text="Version 1.0" />
 
 </LinearLayout>

@@ -24,7 +24,7 @@ dependencies {
     compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
     compile 'com.android.support:support-vector-drawable:27.0.2'
     compile project(':ut61e_decoder_lib')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:1.2.10"
 }
 
 // The sample build uses multiple directories to

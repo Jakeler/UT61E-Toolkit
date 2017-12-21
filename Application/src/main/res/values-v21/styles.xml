@@ -28,4 +28,17 @@
         <item name="android:textColor">#000</item>
     </style>
 
+        <style name="Theme.BleRecord" parent="Theme.Base">
+        <item name="android:colorPrimary">@color/blePrimary</item>
+        <item name="android:colorPrimaryDark">@color/blePrimaryDark</item>
+        <item name="android:textColorPrimary">@color/bleTextPrimary</item>
+        <item name="android:textColor">#000</item>
+    </style>
+
+        <style name="Theme.LogView" parent="Theme.Base">
+        <item name="android:colorPrimary">@color/logPrimary</item>
+        <item name="android:colorPrimaryDark">@color/logPrimaryDark</item>
+        <item name="android:textColorPrimary">@color/logTextPrimary</item>
+        <item name="android:textColor">#000</item>
+    </style>
 </resources>

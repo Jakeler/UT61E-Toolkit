@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="startPrimary">#333</color>
-    <color name="startPrimaryDark">#000</color>
-    <color name="startTextPrimary">#FFF</color>
+    <color name="startPrimary">#333333</color>
+    <color name="startPrimaryDark">#000000</color>
+    <color name="startTextPrimary">#ffffff</color>
+
+    <color name="blePrimary">#689f38</color>
+    <color name="blePrimaryDark">#2e7d32</color>
+    <color name="bleTextPrimary">#000000</color>
+
+    <color name="logPrimary">#ff3d00</color>
+    <color name="logPrimaryDark">#dd2c00</color>
+    <color name="logTextPrimary">#000000</color>
 </resources>

@@ -55,7 +55,8 @@
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings" />
 
-        <activity android:name=".StartActivity">
+        <activity android:name=".StartActivity"
+            android:theme="@style/Theme.Start">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="startPrimary">#333</color>
+    <color name="startPrimaryDark">#000</color>
+    <color name="startTextPrimary">#FFF</color>
+</resources>

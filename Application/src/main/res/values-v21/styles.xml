@@ -17,5 +17,15 @@
 
 <resources>
 
+    <!-- Activity themes -->
+    <style name="Theme.Base" parent="android:Theme.DeviceDefault.Light">
+    </style>
+
+    <style name="Theme.Start" parent="Theme.Base">
+        <item name="android:colorPrimary">@color/startPrimary</item>
+        <item name="android:colorPrimaryDark">@color/startPrimaryDark</item>
+        <item name="android:textColorPrimary">@color/startTextPrimary</item>
+        <item name="android:textColor">#000</item>
+    </style>
 
 </resources>

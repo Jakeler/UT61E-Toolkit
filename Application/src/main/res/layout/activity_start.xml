@@ -37,7 +37,7 @@
         android:layout_weight="1"
         android:background="@android:color/darker_gray"
         android:drawableStart="@drawable/ic_settings_black_64dp"
-        android:onClick="startView"
+        android:onClick="startSettings"
         android:paddingLeft="20dp"
         android:paddingRight="20dp"
         android:text="@string/start_setting"

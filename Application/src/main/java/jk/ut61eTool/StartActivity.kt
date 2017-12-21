@@ -18,6 +18,10 @@ class StartActivity : Activity() {
     }
 
     fun startView(v: View) {
-        Toast.makeText(this,"Not implemented, stay tuned for updates!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this,"Not implemented, stay tuned for updates!", Toast.LENGTH_SHORT).show()
+    }
+
+    fun startSettings(v: View) {
+        startActivity(Intent(this, SettingsActivity::class.java))
     }
 }

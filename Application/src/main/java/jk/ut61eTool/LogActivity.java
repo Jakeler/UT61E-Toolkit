@@ -30,7 +30,6 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -43,7 +42,6 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -51,21 +49,13 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.listener.ChartTouchListener;
-import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.jake.UT61e_decoder;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -75,30 +65,32 @@ import java.util.UUID;
  * communicates with {@code BluetoothLeService}, which in turn interacts with the
  * Bluetooth LE API.
  */
-public class LogActivity extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener, OnChartGestureListener {
+public class LogActivity extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener {
     private final static String TAG = LogActivity.class.getSimpleName();
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 
     private TextView mConnectionState, mDataField;
-    private TextView fileInfo, dataInfo;
-    private TextView neg, ol, acdc, freqDuty;
-    private ProgressBar logRunning;
-    EditText filename;
-    BarChart graph;
     private String mDeviceName, mDeviceAddress;
     private BluetoothLeService mBluetoothLeService;
+    private boolean mConnected = false;
+
     FileWriter fWriter;
     private File logFile;
-    int lineCount = 0, points = 1, viewSize, alarm_samples;
+    EditText filename;
+    private TextView fileInfo;
+    private ProgressBar logRunning;
+
+    int lineCount = 0, viewSize, alarm_samples;
     String alarm_condition, sound;
     boolean auto_reconnect, alarm_enabled, vibration;
     double low_limit, high_limit;
     private Toast startLogToast;
-    private boolean mConnected = false;
     private UUID uuid;
     private NotificationManager mNotifyMgr;
+
+    GraphUI ui;
 
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -189,7 +181,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
         findViews();
 
-        setupGraph();
+        ui = new GraphUI(this);
 
         final Intent intent = getIntent();
         mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
@@ -205,51 +197,13 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     private void findViews() {
         mConnectionState = (TextView) findViewById(R.id.connection_state);
         mDataField = (TextView) findViewById(R.id.data_value);
+
         logRunning = (ProgressBar) findViewById(R.id.logRunning);
         filename = (EditText) findViewById(R.id.filename);
         fileInfo = (TextView) findViewById(R.id.fileInfo);
-        dataInfo = (TextView) findViewById(R.id.dataInfo);
-
-        neg = (TextView) findViewById(R.id.Neg);
-        ol = (TextView) findViewById(R.id.OL);
-        acdc = (TextView) findViewById(R.id.ACDC);
-        freqDuty = (TextView) findViewById(R.id.FreqDuty);
-
-        graph = (BarChart) findViewById(R.id.graph);
     }
 
-    private void setupGraph() {
-        // enable description text
-        graph.getDescription().setEnabled(false);
 
-        // enable touch gestures
-        graph.setTouchEnabled(true);
-
-        // enable scaling and dragging
-        graph.setDragEnabled(true);
-        graph.setScaleEnabled(true);
-        graph.setDrawGridBackground(false);
-
-        // if disabled, scaling can be done on x- and y-axis separately
-        graph.setPinchZoom(false);
-
-        graph.getAxisLeft().setEnabled(false);
-
-        graph.getLegend().setEnabled(false);
-
-        ValueMarker marker = new ValueMarker(this);
-        marker.setChartView(graph);
-        graph.setMarker(marker);
-
-        List<BarEntry> list = new ArrayList<>();
-        list.add(new BarEntry(0,0, ""));
-        BarDataSet dataSet = new BarDataSet(list, "values");
-        dataSet.setDrawValues(false);
-        dataSet.setColor(Color.BLUE);
-        BarData data = new BarData(dataSet);
-        graph.setData(data);
-        graph.setOnChartGestureListener(this);
-    }
 
     @Override
     protected void onResume() {
@@ -327,23 +281,14 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         if (!ut61e.parse(data)) {
             return;
         }
-        displayData(ut61e);
-        updateDataInfo();
+        ui.displayData(ut61e);
 
         logData(ut61e.toCSVString());
-        points++;
+
         if (isAlarm(ut61e.getValue())) {
             alarm(ut61e.toString());
         }
 
-    }
-
-
-
-
-    private String double2String(double d) {
-        String out = String.format("%5.3f", d);
-        return out;
     }
 
     private void logData(String data) {
@@ -361,13 +306,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         }
     }
 
-    private void enableTextView(View v, boolean enabled) {
-        if (enabled) {
-            v.setAlpha(1.0f);
-        } else {
-            v.setAlpha(0.2f);
-        }
-    }
 
     private void updateConnectionState(final int resourceId) {
         runOnUiThread(new Runnable() {
@@ -378,63 +316,9 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         });
     }
 
-    private void displayData(UT61e_decoder ut61e) {
-        mDataField.setText(ut61e.toString());
 
-        enableTextView(neg, ut61e.getValue() < 0);
-        enableTextView(ol, ut61e.isOL());
-        if (ut61e.isFreq() || ut61e.isDuty()) {
-            enableTextView(freqDuty, true);
-            enableTextView(acdc, false);
-            if (ut61e.isDuty()) freqDuty.setText("Duty");
-            else if (ut61e.isFreq()) freqDuty.setText("Freq.");
-        } else {
-            enableTextView(freqDuty, false);
-            enableTextView(acdc, true);
-            if (ut61e.isDC()) {
-                acdc.setText("DC");
-            } else if (ut61e.isAC()) {
-                acdc.setText("AC");
-            } else {
-                enableTextView(acdc, false);
-            }
-        }
 
-        graph.getBarData().getDataSetByIndex(0).addEntry(new BarEntry(points, (float) ut61e.getValue(), ut61e.unit_str));
-        while (graph.getBarData().getDataSetByIndex(0).getEntryCount() > viewSize) {
-            graph.getBarData().getDataSetByIndex(0).removeFirst();
-        }
-        graph.getBarData().notifyDataChanged();
-        graph.notifyDataSetChanged();
-        graph.invalidate();
-    }
 
-    private void updateDataInfo() {
-        int lowX = (int)(graph.getLowestVisibleX()+0.5);
-        int highX = (int)(graph.getHighestVisibleX()+0.5);
-        List<BarEntry> viewData = new ArrayList<>();
-        for (int i = lowX; i < highX; i++) {
-            viewData.add(graph.getBarData().getDataSetByIndex(0).getEntriesForXValue(i).get(0));
-        }
-
-        double sum = 0, min = viewData.get(0).getY(), max = min;
-        for (BarEntry e : viewData) {
-            float value = e.getY();
-            sum += value;
-            min = value < min? value : min;
-            max = value > max? value : max;
-        }
-        double avg = sum / viewData.size();
-
-        sum = 0;
-        for (BarEntry e : viewData) {
-            sum += Math.abs(e.getY() - avg);
-        }
-        double stdDev = sum / viewData.size();
-
-        dataInfo.setText("Max: " + double2String(max) + " | Min: " + double2String(min)
-                + " | Avg: " + double2String(avg) + " | Std.dev: " + double2String(stdDev));
-    }
 
     private void putNotify(int points) {
         NotificationCompat.Builder mBuilder =
@@ -587,29 +471,5 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    @Override
-    public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
-        updateDataInfo();
-    }
 
-    @Override
-    public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {}
-
-    @Override
-    public void onChartLongPressed(MotionEvent me) {}
-
-    @Override
-    public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {}
-
-    @Override
-    public void onChartDoubleTapped(MotionEvent me) {}
-
-    @Override
-    public void onChartSingleTapped(MotionEvent me) {}
-
-    @Override
-    public void onChartScale(MotionEvent me, float scaleX, float scaleY) {}
-
-    @Override
-    public void onChartTranslate(MotionEvent me, float dX, float dY){}
 }

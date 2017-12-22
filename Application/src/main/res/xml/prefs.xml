@@ -5,6 +5,7 @@
             android:defaultValue="60"
             android:inputType="number"
             android:key="viewport"
+            android:icon="@drawable/ic_timeline_black_24dp"
             android:summary="@string/pref_viewport_desc"
             android:title="@string/pref_viewport"/>
     </PreferenceCategory>
@@ -12,11 +13,13 @@
 
         <CheckBoxPreference
             android:defaultValue="false"
+            android:icon="@drawable/ic_sync_black_24dp"
             android:key="reconnect"
             android:summary="@string/pref_auto_connect_desc"
             android:title="@string/pref_auto_connect" />
         <EditTextPreference
             android:defaultValue="0000ffe1-0000-1000-8000-00805f9b34fb"
+            android:icon="@drawable/ic_error_outline_black_24dp"
             android:key="uuid"
             android:selectAllOnFocus="true"
             android:singleLine="true"
@@ -26,7 +29,7 @@
     <PreferenceCategory android:title="Alarm">
         <CheckBoxPreference
             android:defaultValue="false"
-            android:icon="@drawable/ic_info_black_24dp"
+            android:icon="@drawable/ic_alarm_on_black_24dp"
             android:key="alarm_enabled"
             android:title="@string/pref_alarm_enabled" />
         <ListPreference
@@ -49,6 +52,7 @@
         <EditTextPreference
             android:defaultValue="-0.000"
             android:dependency="alarm_enabled"
+            android:icon="@drawable/ic_trending_down_black_24dp"
             android:inputType="numberSigned|numberDecimal"
             android:key="low_limit"
             android:selectAllOnFocus="true"
@@ -57,6 +61,7 @@
         <EditTextPreference
             android:defaultValue="0.000"
             android:dependency="alarm_enabled"
+            android:icon="@drawable/ic_trending_up_black_24dp"
             android:inputType="numberSigned|numberDecimal"
             android:key="high_limit"
             android:selectAllOnFocus="true"
@@ -65,11 +70,13 @@
         <CheckBoxPreference
             android:defaultValue="true"
             android:dependency="alarm_enabled"
+            android:icon="@drawable/ic_vibration_black_24dp"
             android:key="vibra"
             android:title="@string/pref_vibration" />
         <RingtonePreference
             android:defaultValue="content://settings/system/notification_sound"
             android:dependency="alarm_enabled"
+            android:icon="@drawable/ic_ring_volume_black_24dp"
             android:key="sound"
             android:ringtoneType="notification"
             android:title="@string/pref_alarm_sound" />

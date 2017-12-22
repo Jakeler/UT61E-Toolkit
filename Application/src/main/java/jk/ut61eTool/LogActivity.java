@@ -267,28 +267,17 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     }
 
     private void decodeData(byte[] data) {
-//        String debug = "{";
-//        for (int i = 0; i < data.length; i++) {
-//            debug += data[i];
-//            if (i != data.length-1) {
-//                debug += ", ";
-//            }
-//        }
-//        debug += "}";
-//        Log.d("TEST", debug);
-
         UT61e_decoder ut61e = new UT61e_decoder();
-        if (!ut61e.parse(data)) {
-            return;
+        if (ut61e.parse(data)) {
+
+            ui.displayData(ut61e);
+
+            logData(ut61e.toCSVString());
+
+            if (isAlarm(ut61e.getValue())) {
+                alarm(ut61e.toString());
+            }
         }
-        ui.displayData(ut61e);
-
-        logData(ut61e.toCSVString());
-
-        if (isAlarm(ut61e.getValue())) {
-            alarm(ut61e.toString());
-        }
-
     }
 
     private void logData(String data) {
@@ -315,10 +304,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
             }
         });
     }
-
-
-
-
 
     private void putNotify(int points) {
         NotificationCompat.Builder mBuilder =
@@ -450,14 +435,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
         loadSettings();
-        Log.i(TAG, "onSharedPreferenceChanged: " + s);
-        switch (s) {
-            case "viewport":
-//                graph.getViewport().setMaxX(viewSize);
-//                graph.getSeries().clear();
-//                Log.d(TAG, "new Viewport: " + graph.getViewport().getMaxX(false));
-                break;
-        }
     }
 
     @Override

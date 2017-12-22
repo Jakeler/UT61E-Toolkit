@@ -89,16 +89,15 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     BarChart graph;
     private String mDeviceName, mDeviceAddress;
     private BluetoothLeService mBluetoothLeService;
-    FileWriter fWriter;
     private File logFile;
-    int lineCount = 0, points = 1, viewSize, alarm_samples;
+    int points = 1, viewSize, alarm_samples;
     String alarm_condition, sound;
     boolean auto_reconnect, alarm_enabled, vibration;
     double low_limit, high_limit;
-    private Toast startLogToast;
     private boolean mConnected = false;
     private UUID uuid;
     private NotificationManager mNotifyMgr;
+    private DataLogger logger;
 
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -189,6 +188,9 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
         findViews();
 
+        mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        logger = new DataLogger(this,mNotifyMgr,fileInfo,filename,logRunning);
+
         setupGraph();
 
         final Intent intent = getIntent();
@@ -199,7 +201,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
-        mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
     }
 
     private void findViews() {
@@ -265,9 +266,9 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     @Override
     protected void onPause() {
         super.onPause();
-        if (fWriter == null && !alarm_enabled) {
-            unregisterReceiver(mGattUpdateReceiver);
-        }
+//        if (fWriter == null && !alarm_enabled) {
+//            unregisterReceiver(mGattUpdateReceiver);
+//        }
     }
 
     @Override
@@ -275,9 +276,9 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         super.onDestroy();
         unbindService(mServiceConnection);
         mBluetoothLeService = null;
-        if (fWriter != null) {
-            stopLog();
-        }
+//        if (fWriter != null) {
+//            stopLog();
+//        }
         mNotifyMgr.cancelAll();
     }
 
@@ -330,7 +331,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         displayData(ut61e);
         updateDataInfo();
 
-        logData(ut61e.toCSVString());
+        logger.logData(ut61e.toCSVString());
         points++;
         if (isAlarm(ut61e.getValue())) {
             alarm(ut61e.toString());
@@ -338,28 +339,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
     }
 
-
-
-
-    private String double2String(double d) {
-        String out = String.format("%5.3f", d);
-        return out;
-    }
-
-    private void logData(String data) {
-        if (fWriter != null) {
-            try {
-                fWriter.write(data + "\n");
-                fWriter.flush();
-                lineCount++;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            fileInfo.setText("Path: " + logFile.getPath() + "\n" +
-                    "Size: " + String.format("%.2f", logFile.length() / 1000.0) + " KB  (" + lineCount + " Data points)");
-            putNotify(lineCount);
-        }
-    }
 
     private void enableTextView(View v, boolean enabled) {
         if (enabled) {
@@ -436,83 +415,25 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
                 + " | Avg: " + double2String(avg) + " | Std.dev: " + double2String(stdDev));
     }
 
-    private void putNotify(int points) {
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.tile)
-                        .setContentTitle("Logging Running")
-                        .setContentText(points + " Data points");
-        mBuilder.setOngoing(true);
-
-        Intent resultIntent = new Intent(this, LogActivity.class);
-        resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        resultIntent.setAction("android.intent.action.MAIN");
-        resultIntent.addCategory("android.intent.category.LAUNCHER");
-        PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mBuilder.setContentIntent(resultPendingIntent);
-
-        mNotifyMgr.notify(1, mBuilder.build());
-
+    private String double2String(double d) {
+        return String.format("%5.3f", d);
     }
+
+
+
 
     public void onSwitchClick(View v) {
         Switch sw = (Switch) v;
         if (sw.isChecked()) {
-            startLog();
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 7);
+            }
+            logger.startLog();
         } else {
-            stopLog();
+            logger.stopLog();
         }
     }
 
-
-    private void startLog() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 7);
-        }
-
-        createFolder();
-        logFile = new File(Environment.getExternalStorageDirectory() + File.separator + getString(R.string.log_folder) + File.separator + filename.getText());
-        Log.d("TAG", logFile.getPath()); //<-- check the log to make sure the path is correct.
-        Map<String, ?> prefs = PreferenceManager.getDefaultSharedPreferences(this).getAll();
-        Log.d(TAG, "PREFS: " + prefs.get("viewport"));
-
-        Switch sw = (Switch) findViewById(R.id.switch1);
-        try {
-            fWriter = new FileWriter(logFile, true);
-            fWriter.write("### " + Calendar.getInstance().getTime().toString() + " ###\n");
-            fWriter.write(UT61e_decoder.csvHeader + "\n");
-            fWriter.flush();
-            filename.setEnabled(false);
-            logRunning.setIndeterminate(true);
-            lineCount = 0;
-            sw.setChecked(true);
-        } catch (IOException e) {
-            startLogToast = Toast.makeText(this, getString(R.string.storage_exp) + e.getMessage(), Toast.LENGTH_LONG);
-            startLogToast.show();
-            sw.setChecked(false);
-        }
-    }
-
-    private boolean createFolder() {
-        File folder = new File(Environment.getExternalStorageDirectory() + File.separator + getString(R.string.log_folder));
-        if (!folder.exists()) {
-            return folder.mkdirs();
-        }
-        return false;
-    }
-
-    private void stopLog() {
-        try {
-            fWriter.flush();
-            fWriter.close();
-            fWriter = null;
-            filename.setEnabled(true);
-            logRunning.setIndeterminate(false);
-            mNotifyMgr.cancel(1);
-        } catch (IOException | NullPointerException e) {
-            Toast.makeText(this, getString(R.string.storage_exp) + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    }
 
     private boolean isAlarm(double value) {
         if (!alarm_enabled) {
@@ -566,23 +487,15 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
         loadSettings();
-        Log.i(TAG, "onSharedPreferenceChanged: " + s);
-        switch (s) {
-            case "viewport":
-//                graph.getViewport().setMaxX(viewSize);
-//                graph.getSeries().clear();
-//                Log.d(TAG, "new Viewport: " + graph.getViewport().getMaxX(false));
-                break;
-        }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            if (startLogToast != null) {
-                startLogToast.cancel();
-            }
-            startLog();
+//            if (startLogToast != null) {
+//                startLogToast.cancel();
+//            }
+            logger.startLog();
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }

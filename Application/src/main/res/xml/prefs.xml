@@ -68,7 +68,7 @@
             android:key="vibra"
             android:title="@string/pref_vibration" />
         <RingtonePreference
-            android:defaultValue=""
+            android:defaultValue="content://settings/system/notification_sound"
             android:dependency="alarm_enabled"
             android:key="sound"
             android:ringtoneType="notification"
@@ -78,13 +78,13 @@
         <Preference
         android:selectable="false"
         android:enabled="true"
-        android:key="example_key"
+        android:key="info"
         android:title="Version"
         android:summary="1.0 (Complied on 18.10.17)" />
         <Preference
         android:selectable="false"
         android:enabled="true"
-        android:key="example_key"
+        android:key="credits"
         android:title="Credits"
         android:summary="GraphView\nGoogle BLE Example" />
     </PreferenceCategory>

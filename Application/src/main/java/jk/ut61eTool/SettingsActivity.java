@@ -3,7 +3,12 @@ package jk.ut61eTool;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.util.Log;
+import android.view.View;
+
+import java.util.Date;
 
 
 public class SettingsActivity extends PreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
@@ -12,6 +17,8 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.prefs);
             getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+            Preference preference = findPreference("info");
+            preference.setSummary("Version: " + BuildConfig.VERSION_NAME + "\n" + new Date(BuildConfig.TIMESTAMP));
         }
 
     @Override

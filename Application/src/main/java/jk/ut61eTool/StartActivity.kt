@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 
 class StartActivity : Activity() {
@@ -11,6 +12,7 @@ class StartActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
+        findViewById<TextView>(R.id.version).setText("Version: " + BuildConfig.VERSION_NAME)
     }
 
     fun startScan(v : View) {

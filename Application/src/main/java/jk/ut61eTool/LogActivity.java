@@ -82,7 +82,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     private TextView fileInfo;
     private ProgressBar logRunning;
 
-    int lineCount = 0, viewSize, alarm_samples;
+    int lineCount = 0, alarm_samples;
     String alarm_condition, sound;
     boolean auto_reconnect, alarm_enabled, vibration;
     double low_limit, high_limit;
@@ -174,14 +174,13 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.log_activity);
+        findViews();
+
+        ui = new GraphUI(this);
 
         PreferenceManager.setDefaultValues(this, R.xml.prefs, false);
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
         loadSettings();
-
-        findViews();
-
-        ui = new GraphUI(this);
 
         final Intent intent = getIntent();
         mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
@@ -420,7 +419,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
     private void loadSettings() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        viewSize = Integer.valueOf(prefs.getString("viewport", "60"));
+        ui.viewSize = Integer.valueOf(prefs.getString("viewport", "60"));
         auto_reconnect = prefs.getBoolean("reconnect", false);
         uuid = UUID.fromString(prefs.getString("uuid", ""));
         alarm_enabled = prefs.getBoolean("alarm_enabled", false);

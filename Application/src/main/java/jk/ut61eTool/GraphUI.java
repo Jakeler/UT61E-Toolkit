@@ -26,7 +26,7 @@ public class GraphUI implements OnChartGestureListener {
     TextView mDataField, dataInfo;
     TextView neg, ol, acdc, freqDuty;
     BarChart graph;
-    int points = 1;
+    int points = 1, viewSize;
 
     public GraphUI(LogActivity a) {
 
@@ -100,7 +100,7 @@ public class GraphUI implements OnChartGestureListener {
         }
 
         graph.getBarData().getDataSetByIndex(0).addEntry(new BarEntry(points, (float) ut61e.getValue(), ut61e.unit_str));
-        while (graph.getBarData().getDataSetByIndex(0).getEntryCount() > activity.viewSize) {
+        while (graph.getBarData().getDataSetByIndex(0).getEntryCount() > viewSize) {
             graph.getBarData().getDataSetByIndex(0).removeFirst();
         }
         graph.getBarData().notifyDataChanged();

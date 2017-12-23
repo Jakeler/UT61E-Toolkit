@@ -84,7 +84,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     private Toast startLogToast;
 
     NotificationManager mNotifyMgr;
-    private boolean auto_reconnect;
+    private boolean auto_reconnect, connection_wanted;
 
     GraphUI ui;
     Alarms alarm;
@@ -101,6 +101,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
             }
             // Automatically connects to the device upon successful start-up initialization.
             mBluetoothLeService.connect(mDeviceAddress);
+            connection_wanted = true;
         }
 
         @Override
@@ -130,14 +131,13 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
             final String action = intent.getAction();
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
                 mConnected = true;
-                updateConnectionState(R.string.connected);
+                updateConnectionState();
                 invalidateOptionsMenu();
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnected = false;
-                updateConnectionState(R.string.disconnected);
+                updateConnectionState();
                 invalidateOptionsMenu();
                 mDataField.setText(R.string.no_data);
-                reconnect();
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 boolean foundUUID = false;
                 for (BluetoothGattService gattService : mBluetoothLeService.getSupportedGattServices()) {
@@ -152,6 +152,8 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
                     Log.e(TAG, "No suitable Characteristic found");
                 }
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                updateConnectionState();
+                if (!connection_wanted) return;
                 byte[] extra = intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA);
                 decodeData(extra);
             }
@@ -160,9 +162,11 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     };
 
     public void reconnect() {
-        if (auto_reconnect) {
-            mBluetoothLeService.connect(mDeviceAddress);
+        if (auto_reconnect && connection_wanted) {
             Log.i(TAG, "reconnect: " + auto_reconnect);
+            mBluetoothLeService.connect(mDeviceAddress);
+            updateConnectionState();
+            invalidateOptionsMenu();
         }
     }
 
@@ -235,7 +239,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.gatt_services, menu);
-        if (mConnected) {
+        if (connection_wanted) {
             menu.findItem(R.id.menu_connect).setVisible(false);
             menu.findItem(R.id.menu_disconnect).setVisible(true);
         } else {
@@ -249,10 +253,16 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_connect:
+                connection_wanted = true;
                 mBluetoothLeService.connect(mDeviceAddress);
+                updateConnectionState();
+                invalidateOptionsMenu();
                 return true;
             case R.id.menu_disconnect:
+                connection_wanted = false;
                 mBluetoothLeService.disconnect();
+                updateConnectionState();
+                invalidateOptionsMenu();
                 return true;
             case android.R.id.home:
                 onBackPressed();
@@ -260,6 +270,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
             case R.id.settings:
                 startActivity(new Intent(this, SettingsActivity.class));
         }
+        updateConnectionState();
         return super.onOptionsItemSelected(item);
     }
 
@@ -293,11 +304,17 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     }
 
 
-    private void updateConnectionState(final int resourceId) {
+    private void updateConnectionState() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mConnectionState.setText(resourceId);
+                if (mConnected && connection_wanted) {
+                    mConnectionState.setText(R.string.connected);
+                } else if (!mConnected && !connection_wanted){
+                    mConnectionState.setText(R.string.disconnected);
+                } else {
+                    mConnectionState.setText(R.string.working);
+                }
             }
         });
     }

@@ -30,7 +30,6 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
@@ -54,7 +53,6 @@ import com.jake.UT61e_decoder;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.UUID;
@@ -75,22 +73,21 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     private String mDeviceName, mDeviceAddress;
     private BluetoothLeService mBluetoothLeService;
     private boolean mConnected = false;
+    private UUID uuid;
 
-    FileWriter fWriter;
+    private FileWriter fWriter;
     private File logFile;
-    EditText filename;
+    private EditText filename;
     private TextView fileInfo;
     private ProgressBar logRunning;
-
-    int lineCount = 0, alarm_samples;
-    String alarm_condition, sound;
-    boolean auto_reconnect, alarm_enabled, vibration;
-    double low_limit, high_limit;
+    private int lineCount = 0;
     private Toast startLogToast;
-    private UUID uuid;
-    private NotificationManager mNotifyMgr;
+
+    NotificationManager mNotifyMgr;
+    private boolean auto_reconnect;
 
     GraphUI ui;
+    Alarms alarm;
 
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -177,6 +174,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         findViews();
 
         ui = new GraphUI(this);
+        alarm = new Alarms(this);
 
         PreferenceManager.setDefaultValues(this, R.xml.prefs, false);
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
@@ -218,7 +216,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     @Override
     protected void onPause() {
         super.onPause();
-        if (fWriter == null && !alarm_enabled) {
+        if (fWriter == null && !alarm.enabled) {
             unregisterReceiver(mGattUpdateReceiver);
         }
     }
@@ -273,8 +271,8 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
             logData(ut61e.toCSVString());
 
-            if (isAlarm(ut61e.getValue())) {
-                alarm(ut61e.toString());
+            if (alarm.isAlarm(ut61e.getValue())) {
+                alarm.alarm(ut61e.toString());
             }
         }
     }
@@ -382,53 +380,19 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         }
     }
 
-    private boolean isAlarm(double value) {
-        if (!alarm_enabled) {
-            return false;
-        }
-        switch (alarm_condition) {
-            case "both":
-                if (value > high_limit || value < low_limit) alarm_samples--;
-                break;
-            case "above":
-                if (value > high_limit) alarm_samples--;
-                break;
-            case "below":
-                if (value < low_limit) alarm_samples--;
-        }
-        if (alarm_samples < 1) {
-            loadSettings();
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private void alarm(String value) {
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this);
-        mBuilder.setContentTitle("Alarm triggered!");
-        int i = Arrays.asList(getResources().getStringArray(R.array.alarm_condition_values)).indexOf(alarm_condition);
-        mBuilder.setContentText(getResources().getStringArray(R.array.alarm_conditions)[i] + ": " + value);
-        mBuilder.setSmallIcon(R.drawable.ic_error_outline_black_24dp);
-        if (vibration) mBuilder.setVibrate(new long[]{0, 500, 500});
-        mBuilder.setAutoCancel(true);
-        mBuilder.setSound(Uri.parse(sound));
-
-        mNotifyMgr.notify(17, mBuilder.build());
-    }
 
     private void loadSettings() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         ui.viewSize = Integer.valueOf(prefs.getString("viewport", "60"));
-        auto_reconnect = prefs.getBoolean("reconnect", false);
         uuid = UUID.fromString(prefs.getString("uuid", ""));
-        alarm_enabled = prefs.getBoolean("alarm_enabled", false);
-        alarm_condition = prefs.getString("alarm_condition", "0");
-        alarm_samples = Integer.valueOf(prefs.getString("samples", "3"));
-        low_limit = Double.valueOf(prefs.getString("low_limit", "0"));
-        high_limit = Double.valueOf(prefs.getString("high_limit", "0"));
-        vibration = prefs.getBoolean("vibra", true);
-        sound = prefs.getString("sound", "");
+        auto_reconnect = prefs.getBoolean("reconnect", false);
+        alarm.enabled = prefs.getBoolean("alarm_enabled", false);
+        alarm.condition = prefs.getString("alarm_condition", "0");
+        alarm.samples = Integer.valueOf(prefs.getString("samples", "3"));
+        alarm.low_limit = Double.valueOf(prefs.getString("low_limit", "0"));
+        alarm.high_limit = Double.valueOf(prefs.getString("high_limit", "0"));
+        alarm.vibration = prefs.getBoolean("vibra", true);
+        alarm.sound = prefs.getString("sound", "");
     }
 
     @Override

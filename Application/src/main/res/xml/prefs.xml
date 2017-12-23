@@ -11,12 +11,6 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="Connection">
 
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:icon="@drawable/ic_sync_black_24dp"
-            android:key="reconnect"
-            android:summary="@string/pref_auto_connect_desc"
-            android:title="@string/pref_auto_connect" />
         <EditTextPreference
             android:defaultValue="0000ffe1-0000-1000-8000-00805f9b34fb"
             android:icon="@drawable/ic_error_outline_black_24dp"

@@ -84,7 +84,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     private Toast startLogToast;
 
     NotificationManager mNotifyMgr;
-    private boolean auto_reconnect, connection_wanted;
+    private boolean connection_wanted;
 
     GraphUI ui;
     Alarms alarm;
@@ -161,14 +161,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         }
     };
 
-    public void reconnect() {
-        if (auto_reconnect && connection_wanted) {
-            Log.i(TAG, "reconnect: " + auto_reconnect);
-            mBluetoothLeService.connect(mDeviceAddress);
-            updateConnectionState();
-            invalidateOptionsMenu();
-        }
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -402,7 +394,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         ui.viewSize = Integer.valueOf(prefs.getString("viewport", "60"));
         uuid = UUID.fromString(prefs.getString("uuid", ""));
-        auto_reconnect = prefs.getBoolean("reconnect", false);
         alarm.enabled = prefs.getBoolean("alarm_enabled", false);
         alarm.condition = prefs.getString("alarm_condition", "0");
         alarm.samples = Integer.valueOf(prefs.getString("samples", "3"));

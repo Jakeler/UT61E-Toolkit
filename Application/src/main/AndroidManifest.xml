@@ -47,7 +47,8 @@
         <activity
             android:name=".LogActivity"
             android:theme="@style/Theme.BleRecord"
-            android:launchMode="singleTask" />
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize" />
 
         <service
             android:name=".BluetoothLeService"

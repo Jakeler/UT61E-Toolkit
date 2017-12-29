@@ -4,11 +4,11 @@
     <color name="startPrimaryDark">#000000</color>
     <color name="startTextPrimary">#ffffff</color>
 
-    <color name="blePrimary">#689f38</color>
-    <color name="blePrimaryDark">#2e7d32</color>
+    <color name="blePrimary">#388e3c</color>
+    <color name="blePrimaryDark">#1b5e20</color>
     <color name="bleTextPrimary">#000000</color>
 
-    <color name="logPrimary">#ff3d00</color>
-    <color name="logPrimaryDark">#dd2c00</color>
+    <color name="logPrimary">#d50000</color>
+    <color name="logPrimaryDark">#b71c1c</color>
     <color name="logTextPrimary">#000000</color>
 </resources>

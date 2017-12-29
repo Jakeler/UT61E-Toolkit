@@ -1,6 +1,6 @@
 package jk.ut61eTool;
 
-import android.graphics.Color;
+import android.support.v4.content.ContextCompat;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
@@ -71,7 +71,7 @@ public class GraphUI implements OnChartGestureListener {
         list.add(new BarEntry(0,0, ""));
         BarDataSet dataSet = new BarDataSet(list, "values");
         dataSet.setDrawValues(false);
-        dataSet.setColor(Color.BLUE);
+        dataSet.setColor(ContextCompat.getColor(activity,R.color.blePrimary));
         BarData data = new BarData(dataSet);
         graph.setData(data);
         graph.setOnChartGestureListener(this);

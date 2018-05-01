@@ -1,8 +1,8 @@
 package jk.ut61eTool;
 
+import android.app.Activity;
 import android.support.v4.content.ContextCompat;
 import android.view.MotionEvent;
-import android.view.View;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.BarChart;
@@ -21,26 +21,22 @@ import java.util.List;
  */
 
 public class GraphUI implements OnChartGestureListener {
-    LogActivity activity;
+    Activity activity;
 
-    TextView mDataField, dataInfo;
-    TextView neg, ol, acdc, freqDuty;
+    TextView dataInfo;
     BarChart graph;
+
     int points = 1, viewSize;
 
-    public GraphUI(LogActivity a) {
+    public GraphUI(Activity a, BarChart pGraph, TextView pDataInfo) {
 
         activity = a;
 
-        mDataField = (TextView) a.findViewById(R.id.data_value);
-        dataInfo = (TextView) a.findViewById(R.id.dataInfo);
+        //dataInfo = (TextView) a.findViewById(R.id.dataInfo);
+        dataInfo = pDataInfo;
+        //graph = (BarChart) a.findViewById(R.id.graph);
+        graph = pGraph;
 
-        neg = (TextView) a.findViewById(R.id.Neg);
-        ol = (TextView) a.findViewById(R.id.OL);
-        acdc = (TextView) a.findViewById(R.id.ACDC);
-        freqDuty = (TextView) a.findViewById(R.id.FreqDuty);
-
-        graph = (BarChart) a.findViewById(R.id.graph);
         setupGraph();
     }
 
@@ -78,26 +74,6 @@ public class GraphUI implements OnChartGestureListener {
     }
 
     public void displayData(UT61e_decoder ut61e) {
-        mDataField.setText(ut61e.toString());
-
-        enableTextView(neg, ut61e.getValue() < 0);
-        enableTextView(ol, ut61e.isOL());
-        if (ut61e.isFreq() || ut61e.isDuty()) {
-            enableTextView(freqDuty, true);
-            enableTextView(acdc, false);
-            if (ut61e.isDuty()) freqDuty.setText("Duty");
-            else if (ut61e.isFreq()) freqDuty.setText("Freq.");
-        } else {
-            enableTextView(freqDuty, false);
-            enableTextView(acdc, true);
-            if (ut61e.isDC()) {
-                acdc.setText("DC");
-            } else if (ut61e.isAC()) {
-                acdc.setText("AC");
-            } else {
-                enableTextView(acdc, false);
-            }
-        }
 
         graph.getBarData().getDataSetByIndex(0).addEntry(new BarEntry(points, (float) ut61e.getValue(), ut61e.unit_str));
         while (graph.getBarData().getDataSetByIndex(0).getEntryCount() > viewSize) {
@@ -142,13 +118,7 @@ public class GraphUI implements OnChartGestureListener {
         return String.format("%5.3f", d);
     }
 
-    private void enableTextView(View v, boolean enabled) {
-        if (enabled) {
-            v.setAlpha(1.0f);
-        } else {
-            v.setAlpha(0.2f);
-        }
-    }
+
 
     @Override
     public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {

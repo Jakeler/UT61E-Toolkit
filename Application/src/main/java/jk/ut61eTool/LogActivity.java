@@ -86,7 +86,8 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     NotificationManager mNotifyMgr;
     private boolean connection_wanted;
 
-    GraphUI ui;
+    GraphUI graphUI;
+    UI ui;
     Alarms alarm;
 
     // Code to manage Service lifecycle.
@@ -169,7 +170,9 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         setContentView(R.layout.log_activity);
         findViews();
 
-        ui = new GraphUI(this);
+        graphUI = new GraphUI(this, findViewById(R.id.graph), findViewById(R.id.dataInfo));
+        ui = new UI(this);
+
         alarm = new Alarms(this);
 
         PreferenceManager.setDefaultValues(this, R.xml.prefs, false);
@@ -188,12 +191,12 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     }
 
     private void findViews() {
-        mConnectionState = (TextView) findViewById(R.id.connection_state);
-        mDataField = (TextView) findViewById(R.id.data_value);
+        mConnectionState = findViewById(R.id.connection_state);
+        mDataField = findViewById(R.id.data_value);
 
-        logRunning = (ProgressBar) findViewById(R.id.logRunning);
-        filename = (EditText) findViewById(R.id.filename);
-        fileInfo = (TextView) findViewById(R.id.fileInfo);
+        logRunning = findViewById(R.id.logRunning);
+        filename = findViewById(R.id.filename);
+        fileInfo = findViewById(R.id.fileInfo);
     }
 
 
@@ -270,7 +273,8 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         UT61e_decoder ut61e = new UT61e_decoder();
         if (ut61e.parse(data)) {
 
-            ui.displayData(ut61e);
+            ui.update(ut61e);
+            graphUI.displayData(ut61e);
 
             logData(ut61e.toCSVString());
 
@@ -351,7 +355,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         Map<String, ?> prefs = PreferenceManager.getDefaultSharedPreferences(this).getAll();
         Log.d(TAG, "PREFS: " + prefs.get("viewport"));
 
-        Switch sw = (Switch) findViewById(R.id.switch1);
+        Switch sw = findViewById(R.id.switch1);
         try {
             fWriter = new FileWriter(logFile, true);
             fWriter.write("### " + Calendar.getInstance().getTime().toString() + " ###\n");
@@ -392,7 +396,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
     private void loadSettings() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        ui.viewSize = Integer.valueOf(prefs.getString("viewport", "60"));
+        graphUI.viewSize = Integer.valueOf(prefs.getString("viewport", "60"));
         uuid = UUID.fromString(prefs.getString("uuid", ""));
         alarm.enabled = prefs.getBoolean("alarm_enabled", false);
         alarm.condition = prefs.getString("alarm_condition", "0");

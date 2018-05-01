@@ -58,9 +58,9 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * For a given BLE device, this Activity provides the user interface to connect, display data,
- * and display GATT services and characteristics supported by the device.  The Activity
- * communicates with {@code BluetoothLeService}, which in turn interacts with the
+ * For a given BLE device, this Activity provides the user interface to display data,
+ * from the serial GATT characteristic of the multimeter.
+ * The Activity communicates with {@code BluetoothLeService}, which in turn interacts with the
  * Bluetooth LE API.
  */
 public class LogActivity extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener {

@@ -87,7 +87,7 @@
         android:enabled="true"
         android:key="credits"
         android:title="Credits"
-        android:summary="GraphView\nGoogle BLE Example" />
+        android:summary="MPAndroidChart (for data graphs)" />
     </PreferenceCategory>
 
 </PreferenceScreen>

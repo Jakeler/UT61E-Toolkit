@@ -70,7 +70,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 
     private TextView mConnectionState, mDataField;
-    private String mDeviceName, mDeviceAddress;
+    private String mDeviceAddress;
     private BluetoothLeService mBluetoothLeService;
     private boolean mConnected = false;
     private UUID uuid;
@@ -130,33 +130,38 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
-                mConnected = true;
-                updateConnectionState();
-                invalidateOptionsMenu();
-            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                mConnected = false;
-                updateConnectionState();
-                invalidateOptionsMenu();
-                mDataField.setText(R.string.no_data);
-            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-                boolean foundUUID = false;
-                for (BluetoothGattService gattService : mBluetoothLeService.getSupportedGattServices()) {
-                    BluetoothGattCharacteristic characteristic = gattService.getCharacteristic(uuid);
-                    if (characteristic != null) {
-                        mBluetoothLeService.setCharacteristicNotification(characteristic, true);
-                        foundUUID = true;
-                        break;
+            switch (action) {
+                case BluetoothLeService.ACTION_GATT_CONNECTED:
+                    mConnected = true;
+                    updateConnectionState();
+                    invalidateOptionsMenu();
+                    break;
+                case BluetoothLeService.ACTION_GATT_DISCONNECTED:
+                    mConnected = false;
+                    updateConnectionState();
+                    invalidateOptionsMenu();
+                    mDataField.setText(R.string.no_data);
+                    break;
+                case BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED:
+                    boolean foundUUID = false;
+                    for (BluetoothGattService gattService : mBluetoothLeService.getSupportedGattServices()) {
+                        BluetoothGattCharacteristic characteristic = gattService.getCharacteristic(uuid);
+                        if (characteristic != null) {
+                            mBluetoothLeService.setCharacteristicNotification(characteristic, true);
+                            foundUUID = true;
+                            break;
+                        }
                     }
-                }
-                if (!foundUUID) {
-                    Log.e(TAG, "No suitable Characteristic found");
-                }
-            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                updateConnectionState();
-                if (!connection_wanted) return;
-                byte[] extra = intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA);
-                decodeData(extra);
+                    if (!foundUUID) {
+                        Log.e(TAG, "No suitable Characteristic found");
+                    }
+                    break;
+                case BluetoothLeService.ACTION_DATA_AVAILABLE:
+                    updateConnectionState();
+                    if (!connection_wanted) return;
+                    byte[] extra = intent.getByteArrayExtra(BluetoothLeService.EXTRA_DATA);
+                    decodeData(extra);
+                    break;
             }
 
         }
@@ -180,9 +185,8 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         loadSettings();
 
         final Intent intent = getIntent();
-        mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
-        getActionBar().setTitle(mDeviceName);
+        getActionBar().setTitle(intent.getStringExtra(EXTRAS_DEVICE_NAME));
         getActionBar().setDisplayHomeAsUpEnabled(true);
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
@@ -293,24 +297,20 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            fileInfo.setText("Path: " + logFile.getPath() + "\n" +
-                    "Size: " + String.format("%.2f", logFile.length() / 1000.0) + " KB  (" + lineCount + " Data points)");
+            fileInfo.setText(getString(R.string.logfile_info, logFile.getPath(), logFile.length() / 1000.0, lineCount));
             putNotify(lineCount);
         }
     }
 
 
     private void updateConnectionState() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (mConnected && connection_wanted) {
-                    mConnectionState.setText(R.string.connected);
-                } else if (!mConnected && !connection_wanted){
-                    mConnectionState.setText(R.string.disconnected);
-                } else {
-                    mConnectionState.setText(R.string.working);
-                }
+        runOnUiThread(() -> {
+            if (mConnected && connection_wanted) {
+                mConnectionState.setText(R.string.connected);
+            } else if (!mConnected && !connection_wanted){
+                mConnectionState.setText(R.string.disconnected);
+            } else {
+                mConnectionState.setText(R.string.working);
             }
         });
     }
@@ -334,6 +334,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
     }
 
+    @SuppressWarnings("unused")
     public void onSwitchClick(View v) {
         Switch sw = (Switch) v;
         if (sw.isChecked()) {
@@ -403,7 +404,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         alarm.samples = Integer.valueOf(prefs.getString("samples", "3"));
         alarm.low_limit = Double.valueOf(prefs.getString("low_limit", "0"));
         alarm.high_limit = Double.valueOf(prefs.getString("high_limit", "0"));
-        alarm.vibration = prefs.getBoolean("vibra", true);
+        alarm.vibration = prefs.getBoolean("vibration", true);
         alarm.sound = prefs.getString("sound", "");
     }
 

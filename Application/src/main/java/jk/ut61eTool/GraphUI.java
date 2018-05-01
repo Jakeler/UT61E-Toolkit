@@ -110,13 +110,9 @@ public class GraphUI implements OnChartGestureListener {
         }
         double stdDev = sum / viewData.size();
 
-        dataInfo.setText("Max: " + double2String(max) + " | Min: " + double2String(min)
-                + " | Avg: " + double2String(avg) + " | Std.dev: " + double2String(stdDev));
+        dataInfo.setText(activity.getString(R.string.graphdata_info, max, min, avg, stdDev));
     }
 
-    private String double2String(double d) {
-        return String.format("%5.3f", d);
-    }
 
 
 

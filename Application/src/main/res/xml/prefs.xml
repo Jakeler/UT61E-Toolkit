@@ -65,7 +65,7 @@
             android:defaultValue="true"
             android:dependency="alarm_enabled"
             android:icon="@drawable/ic_vibration_black_24dp"
-            android:key="vibra"
+            android:key="vibration"
             android:title="@string/pref_vibration" />
         <RingtonePreference
             android:defaultValue="content://settings/system/notification_sound"

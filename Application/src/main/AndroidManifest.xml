@@ -50,7 +50,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ViewActivity"
+            android:name=".FileSelectActivity"
             android:label="@string/title_activity_view"
             android:parentActivityName=".StartActivity">
             <meta-data

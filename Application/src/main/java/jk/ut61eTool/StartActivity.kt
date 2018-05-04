@@ -19,7 +19,7 @@ class StartActivity : Activity() {
     }
 
     fun startView(v: View) {
-        startActivity(Intent(this, ViewActivity::class.java))
+        startActivity(Intent(this, FileSelectActivity::class.java))
 //        Toast.makeText(this,"Not implemented, stay tuned for updates!", Toast.LENGTH_SHORT).show()
     }
 

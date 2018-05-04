@@ -12,11 +12,11 @@ import android.widget.ArrayAdapter
 import android.widget.ListView
 import java.io.File
 
-class ViewActivity : Activity() {
+class FileSelectActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_view)
+        setContentView(R.layout.activity_select_file)
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
 

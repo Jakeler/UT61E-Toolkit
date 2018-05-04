@@ -73,4 +73,6 @@
     <string name="pref_alarm_sample_desc">Samples that have to be over a limit to trigger the alarm</string>
     <string name="pref_vibration">Vibration</string>
     <string name="pref_alarm_sound">Ringtone</string>
+
+    <string name="title_activity_view">View saved log</string>
 </resources>

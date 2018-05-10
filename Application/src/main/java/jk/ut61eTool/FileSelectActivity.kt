@@ -2,12 +2,15 @@ package jk.ut61eTool
 
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Environment
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import java.io.File
@@ -30,7 +33,17 @@ class FileSelectActivity : Activity() {
             Log.d("FILES", file)
         }
         val arrayAdapter = ArrayAdapter<String>(this, R.layout.listitem_files, R.id.filename, dir.list())
-        findViewById<ListView>(R.id.fileList).adapter = arrayAdapter
+        val fileListView = findViewById<ListView>(R.id.fileList)
+        fileListView.adapter = arrayAdapter
+
+        fileListView.onItemClickListener = object : AdapterView.OnItemClickListener {
+            override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                Log.d("onclick", dir.list()[position])
+                val intent = Intent(this@FileSelectActivity, ViewLogActivity::class.java)
+                intent.putExtra("filename", dir.listFiles()[position])
+                startActivity(intent)
+            }
+        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {

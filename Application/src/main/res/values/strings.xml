@@ -74,5 +74,5 @@
     <string name="pref_vibration">Vibration</string>
     <string name="pref_alarm_sound">Ringtone</string>
 
-    <string name="title_activity_view">View saved log</string>
+    <string name="title_activity_view">Select Logfile</string>
 </resources>

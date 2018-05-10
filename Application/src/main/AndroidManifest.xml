@@ -16,7 +16,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -52,6 +52,14 @@
         <activity
             android:name=".FileSelectActivity"
             android:label="@string/title_activity_view"
+            android:theme="@style/Theme.LogView"
+            android:parentActivityName=".StartActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="jk.ut61eTool.StartActivity" />
+        </activity>
+        <activity android:name=".ViewLogActivity"
+            android:theme="@style/Theme.LogView"
             android:parentActivityName=".StartActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

@@ -10,10 +10,13 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ListView
+import android.widget.TextView
 import java.io.File
+import java.util.*
 
 class FileSelectActivity : Activity() {
 
@@ -40,7 +43,15 @@ class FileSelectActivity : Activity() {
     fun populateListView() {
         val dir = File(Environment.getExternalStorageDirectory().toString(), getString(R.string.log_folder))
 
-        val arrayAdapter = ArrayAdapter<String>(this, R.layout.listitem_files, R.id.filename, dir.list())
+        val arrayAdapter = object : ArrayAdapter<String>(this, R.layout.listitem_files, R.id.filename, dir.list()) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+                val view = super.getView(position, convertView, parent)
+                val file = dir.listFiles()[position]
+
+                view.findViewById<TextView>(R.id.logfile_info)?.text = "Filesize: ${file.length()/1000.0} KB\nModified: ${Date(file.lastModified())}"
+                return view
+            }
+        }
         val fileListView = findViewById<ListView>(R.id.fileList)
         fileListView.adapter = arrayAdapter
 

@@ -21,7 +21,7 @@ class ViewLogActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_log)
 
-        var graphUI = GraphUI(this, findViewById<BarChart>(R.id.view_graph), findViewById(R.id.view_dataInfo))
+        var graphUI = GraphUI(this, findViewById<BarChart>(R.id.view_graph), findViewById(R.id.view_dataInfo), R.color.logPrimary)
         graphUI.viewSize = Int.MAX_VALUE
 
         val file = intent.extras["filename"] as File

@@ -175,7 +175,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         setContentView(R.layout.log_activity);
         findViews();
 
-        graphUI = new GraphUI(this, findViewById(R.id.graph), findViewById(R.id.dataInfo));
+        graphUI = new GraphUI(this, findViewById(R.id.graph), findViewById(R.id.dataInfo), R.color.blePrimary);
         ui = new UI(this);
 
         alarm = new Alarms(this);

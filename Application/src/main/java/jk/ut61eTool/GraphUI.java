@@ -26,9 +26,9 @@ public class GraphUI implements OnChartGestureListener {
     TextView dataInfo;
     BarChart graph;
 
-    int points = 1, viewSize;
+    int points = 1, viewSize, color;
 
-    public GraphUI(Activity a, BarChart pGraph, TextView pDataInfo) {
+    public GraphUI(Activity a, BarChart pGraph, TextView pDataInfo, int pcolor) {
 
         activity = a;
 
@@ -36,6 +36,8 @@ public class GraphUI implements OnChartGestureListener {
         dataInfo = pDataInfo;
         //graph = (BarChart) a.findViewById(R.id.graph);
         graph = pGraph;
+
+        this.color = pcolor;
 
         setupGraph();
     }
@@ -67,7 +69,7 @@ public class GraphUI implements OnChartGestureListener {
         list.add(new BarEntry(0,0, ""));
         BarDataSet dataSet = new BarDataSet(list, "values");
         dataSet.setDrawValues(false);
-        dataSet.setColor(ContextCompat.getColor(activity,R.color.blePrimary));
+        dataSet.setColor(ContextCompat.getColor(activity, color));
         BarData data = new BarData(dataSet);
         graph.setData(data);
         graph.setOnChartGestureListener(this);

@@ -97,6 +97,8 @@ public class GraphUI implements OnChartGestureListener {
             viewData.add(graph.getBarData().getDataSetByIndex(0).getEntriesForXValue(i).get(0));
         }
 
+        if (viewData.size() == 0) return;
+
         double sum = 0, min = viewData.get(0).getY(), max = min;
         for (BarEntry e : viewData) {
             float value = e.getY();

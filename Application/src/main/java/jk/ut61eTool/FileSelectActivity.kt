@@ -25,13 +25,21 @@ class FileSelectActivity : Activity() {
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 7)
+        } else {
+            populateListView()
         }
+    }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            populateListView()
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    fun populateListView() {
         val dir = File(Environment.getExternalStorageDirectory().toString(), getString(R.string.log_folder))
 
-        for (file in dir.list()) {
-            Log.d("FILES", file)
-        }
         val arrayAdapter = ArrayAdapter<String>(this, R.layout.listitem_files, R.id.filename, dir.list())
         val fileListView = findViewById<ListView>(R.id.fileList)
         fileListView.adapter = arrayAdapter
@@ -44,13 +52,6 @@ class FileSelectActivity : Activity() {
                 startActivity(intent)
             }
         }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
 }

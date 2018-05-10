@@ -8,6 +8,11 @@
     tools:context=".ViewLogActivity">
 
 
+    <Spinner
+        android:id="@+id/log_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0" />
 
     <com.github.mikephil.charting.charts.BarChart
         android:id="@+id/view_graph"

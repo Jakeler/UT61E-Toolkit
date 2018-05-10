@@ -359,7 +359,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         Switch sw = findViewById(R.id.switch1);
         try {
             fWriter = new FileWriter(logFile, true);
-            fWriter.write("### " + Calendar.getInstance().getTime().toString() + " ###\n");
+            fWriter.write("# " + Calendar.getInstance().getTime().toString() + "\n");
             fWriter.write(UT61e_decoder.csvHeader + "\n");
             fWriter.flush();
             filename.setEnabled(false);

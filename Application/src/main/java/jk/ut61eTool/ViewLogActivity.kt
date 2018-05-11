@@ -28,7 +28,7 @@ class ViewLogActivity : Activity() {
 
         Log.d("FILE", file.length().toString())
 
-
+        actionBar.title = getString(R.string.logview_actionBar_title, file.name)
 
         var csvFormat = CSVFormat.RFC4180.withDelimiter(';').withCommentMarker('#')
         val parser = CSVParser.parse(file, charset("UTF-8"), csvFormat)

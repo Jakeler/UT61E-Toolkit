@@ -38,6 +38,8 @@
     <string name="logfile_info">Path: %s\nSize: %.2f KB  (%d Data points)</string>
     <string name="graphdata_info">Max: %5.3f | Min: %5.3f | Avg: %5.3f | Std.dev: %5.3f</string>
 
+    <string name="logview_actionBar_title">View: %s</string>
+
     <!-- Menu items -->
     <string name="menu_connect">Connect</string>
     <string name="menu_disconnect">Disconnect</string>

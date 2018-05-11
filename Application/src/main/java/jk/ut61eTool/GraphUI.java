@@ -2,7 +2,6 @@ package jk.ut61eTool;
 
 import android.app.Activity;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.TextView;
 
@@ -27,7 +26,7 @@ public class GraphUI implements OnChartGestureListener {
     TextView dataInfo;
     BarChart graph;
 
-    int points = 1, viewSize, color;
+    int points, viewSize, color;
 
     public GraphUI(Activity a, BarChart pGraph, TextView pDataInfo, int pcolor) {
 
@@ -78,6 +77,8 @@ public class GraphUI implements OnChartGestureListener {
         BarData data = new BarData(dataSet);
         graph.setData(data);
         graph.setOnChartGestureListener(this);
+
+        points = 1;
     }
 
     public void displayData(UT61e_decoder ut61e) {
@@ -90,22 +91,16 @@ public class GraphUI implements OnChartGestureListener {
         graph.notifyDataSetChanged();
         graph.invalidate();
 
-        updateDataInfo();
         points++;
     }
 
-    private void updateDataInfo() {
+    public void updateDataInfo() {
         int lowX = (int)(graph.getLowestVisibleX()+0.5);
         int highX = (int)(graph.getHighestVisibleX()+0.5);
         List<BarEntry> viewData = new ArrayList<>();
 
-        try {
-            for (int i = lowX; i < highX; i++) {
-                viewData.add(graph.getBarData().getDataSetByIndex(0).getEntriesForXValue(i).get(0));
-            }
-        } catch (IndexOutOfBoundsException e) {
-            Log.w("IndexBouds", e.toString());
-            return;
+        for (int i = lowX; i < highX; i++) {
+            viewData.add(graph.getBarData().getDataSetByIndex(0).getEntriesForXValue(i).get(0));
         }
         if (viewData.size() == 0) return;
 

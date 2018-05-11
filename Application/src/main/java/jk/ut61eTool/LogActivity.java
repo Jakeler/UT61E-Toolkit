@@ -279,6 +279,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
             ui.update(ut61e);
             graphUI.displayData(ut61e);
+            graphUI.updateDataInfo();
 
             logData(ut61e.toCSVString());
 

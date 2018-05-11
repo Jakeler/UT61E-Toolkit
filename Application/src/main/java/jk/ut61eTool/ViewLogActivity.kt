@@ -58,9 +58,8 @@ class ViewLogActivity : Activity() {
                 data.unit_str = csvRecord[1]
                 graphUI.displayData(data)
             }
+            graphUI.updateDataInfo()
         }
-
-        Log.d("","2")
 
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {

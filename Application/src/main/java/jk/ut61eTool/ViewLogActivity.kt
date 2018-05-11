@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import android.widget.Toast
 import com.jake.UT61e_decoder
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
@@ -39,7 +40,10 @@ class ViewLogActivity : Activity() {
         for (csvRecord in time_list) {
             time_strings.add(csvRecord.comment)
         }
-
+        if (time_strings.size < 1) {
+            Toast.makeText(this, R.string.parse_error_toast, Toast.LENGTH_SHORT).show()
+            finish()
+        }
 
 
         val spinner = findViewById<Spinner>(R.id.log_spinner)

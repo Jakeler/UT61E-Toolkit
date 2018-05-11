@@ -2,6 +2,7 @@ package jk.ut61eTool;
 
 import android.app.Activity;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.TextView;
 
@@ -65,6 +66,10 @@ public class GraphUI implements OnChartGestureListener {
         marker.setChartView(graph);
         graph.setMarker(marker);
 
+        newDataSet();
+    }
+
+    public void newDataSet() {
         List<BarEntry> list = new ArrayList<>();
         list.add(new BarEntry(0,0, ""));
         BarDataSet dataSet = new BarDataSet(list, "values");
@@ -93,10 +98,15 @@ public class GraphUI implements OnChartGestureListener {
         int lowX = (int)(graph.getLowestVisibleX()+0.5);
         int highX = (int)(graph.getHighestVisibleX()+0.5);
         List<BarEntry> viewData = new ArrayList<>();
-        for (int i = lowX; i < highX; i++) {
-            viewData.add(graph.getBarData().getDataSetByIndex(0).getEntriesForXValue(i).get(0));
-        }
 
+        try {
+            for (int i = lowX; i < highX; i++) {
+                viewData.add(graph.getBarData().getDataSetByIndex(0).getEntriesForXValue(i).get(0));
+            }
+        } catch (IndexOutOfBoundsException e) {
+            Log.w("IndexBouds", e.toString());
+            return;
+        }
         if (viewData.size() == 0) return;
 
         double sum = 0, min = viewData.get(0).getY(), max = min;

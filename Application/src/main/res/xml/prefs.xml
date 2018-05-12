@@ -123,7 +123,7 @@
         android:enabled="true"
         android:key="credits"
         android:title="Credits"
-        android:summary="MPAndroidChart (for data graphs)" />
+        android:summary="[Apache 2] MPAndroidChart (for data graphs)\n[Apache 2] Commons CSV" />
     </PreferenceCategory>
 
 </PreferenceScreen>

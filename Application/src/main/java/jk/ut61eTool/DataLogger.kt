@@ -39,6 +39,7 @@ class DataLogger(private val context : Activity) {
     fun startLog() {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(context, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 7)
+            setRunning(false)
             return
         }
 
@@ -51,13 +52,11 @@ class DataLogger(private val context : Activity) {
             fWriter?.write("# " + Calendar.getInstance().time.toString() + "\n")
             fWriter?.write(UT61e_decoder.csvHeader + "\n")
             fWriter?.flush()
-            filename.isEnabled = false
-            logRunning.isIndeterminate = true
+            setRunning(true)
             lineCount = 0
-            switch.isChecked = true
         } catch (e: IOException) {
             Toast.makeText(context, context.getString(R.string.storage_exp) + e.message, Toast.LENGTH_LONG).show()
-            switch.isChecked = false
+            setRunning(false)
         }
 
     }
@@ -68,14 +67,17 @@ class DataLogger(private val context : Activity) {
             fWriter?.flush()
             fWriter?.close()
             fWriter = null
-            filename.isEnabled = true
-            logRunning.isIndeterminate = false
+            setRunning(false)
             (context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager).cancel(1)
-
         } catch (e: IOException) {
             Toast.makeText(context, context.getString(R.string.storage_exp) + e.message, Toast.LENGTH_LONG).show()
         }
+    }
 
+    fun setRunning(running: Boolean) {
+        filename.isEnabled = !running
+        logRunning.isIndeterminate = running
+        switch.isChecked = running
     }
 
     fun logData(data: String) {

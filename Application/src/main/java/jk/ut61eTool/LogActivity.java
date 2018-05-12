@@ -70,7 +70,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     UI ui;
     Alarms alarm;
     DataLogger logger;
-    private String log_dir;
     private boolean ignore_ol, shunt_mode;
     private double shunt_value;
 

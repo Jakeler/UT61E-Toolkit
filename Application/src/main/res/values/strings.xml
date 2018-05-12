@@ -52,6 +52,12 @@
     <string name="pref_viewport">Graph Viewport Size</string>
     <string name="pref_viewport_desc">Number of displayed data points</string>
 
+    <string name="pref_ignore_ol">Skip OL/UL</string>
+    <string name="pref_ignore_ol_desc">Drop value if range is overloaded</string>
+    <string name="pref_shunt_mode">Shunt mode</string>
+    <string name="pref_shunt_mode_desc">Calculate current from external shunt resistor</string>
+    <string name="pref_shunt_ohm">Resistance in Ohm</string>
+
     <string name="pref_auto_connect">Auto reconnect</string>
     <string name="pref_auto_connect_desc">Try to reconnect after disconnection automatically</string>
     <string name="pref_uuid">Bluetooth UUID</string>
@@ -76,6 +82,10 @@
     <string name="pref_alarm_sample_desc">Samples that have to be over a limit to trigger the alarm</string>
     <string name="pref_vibration">Vibration</string>
     <string name="pref_alarm_sound">Ringtone</string>
+
+    <string name="pref_logdir">Log file folder</string>
+    <string name="pref_logdir_desc">Directory name for log files, relative to ExternalStorage</string>
+    <string name="logdir_digits">abcdefghijklmnopqrstuvwxyzABCDEFGIJKLMOPQRSTUVWQYZ _-0123456789</string>
 
     <string name="title_activity_view">Select Logfile</string>
 </resources>

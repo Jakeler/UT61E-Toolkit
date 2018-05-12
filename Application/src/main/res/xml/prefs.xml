@@ -9,8 +9,31 @@
             android:summary="@string/pref_viewport_desc"
             android:title="@string/pref_viewport"/>
     </PreferenceCategory>
-    <PreferenceCategory android:title="Connection">
 
+    <PreferenceCategory android:title="Data processing">
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_vertical_align_top_black_24dp"
+            android:key="ignore_ol"
+            android:title="@string/pref_ignore_ol"
+            android:summary="@string/pref_ignore_ol_desc"/>
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_power_input_black_24dp"
+            android:key="shunt_mode"
+            android:summary="@string/pref_shunt_mode_desc"
+            android:title="@string/pref_shunt_mode" />
+        <EditTextPreference
+            android:defaultValue="0.001"
+            android:dependency="shunt_mode"
+            android:inputType="numberDecimal"
+            android:key="shunt_ohm"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_shunt_ohm"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Connection">
         <EditTextPreference
             android:defaultValue="0000ffe1-0000-1000-8000-00805f9b34fb"
             android:icon="@drawable/ic_error_outline_black_24dp"
@@ -20,6 +43,7 @@
             android:summary="@string/pref_uuid_desc"
             android:title="@string/pref_uuid" />
     </PreferenceCategory>
+
     <PreferenceCategory android:title="Alarm">
         <CheckBoxPreference
             android:defaultValue="false"
@@ -75,6 +99,18 @@
             android:ringtoneType="notification"
             android:title="@string/pref_alarm_sound" />
     </PreferenceCategory>
+
+    <PreferenceCategory android:title="Filesystem">
+        <EditTextPreference
+            android:defaultValue="@string/log_folder"
+            android:inputType="text"
+            android:digits="@string/logdir_digits"
+            android:key="log_folder"
+            android:icon="@drawable/ic_folder_open_black_24dp"
+            android:title="@string/pref_logdir"
+            android:summary="@string/pref_logdir_desc"/>
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="Info">
         <Preference
         android:selectable="false"

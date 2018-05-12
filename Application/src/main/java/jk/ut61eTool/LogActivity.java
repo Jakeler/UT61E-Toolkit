@@ -209,6 +209,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(mGattUpdateReceiver);
         unbindService(mServiceConnection);
         mBluetoothLeService = null;
 

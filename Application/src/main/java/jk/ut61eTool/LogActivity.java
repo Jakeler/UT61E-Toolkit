@@ -88,7 +88,9 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     GraphUI graphUI;
     UI ui;
     Alarms alarm;
-    String log_dir;
+    private String log_dir;
+    private boolean ignore_ol, shunt_mode;
+    private double shunt_value;
 
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -277,15 +279,26 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         UT61e_decoder ut61e = new UT61e_decoder();
         if (ut61e.parse(data)) {
 
-            ui.update(ut61e);
-            graphUI.displayData(ut61e);
-            graphUI.updateDataInfo();
+            if (shunt_mode && shunt_value != 0.0 && ut61e.getMode() == ut61e.MODE_VOLTAGE) {
+                ut61e.value = ut61e.value/shunt_value; //I = U/R
+                if (ut61e.unit_str.equals("mV")) ut61e.value /= 1000.0;
+                ut61e.unit_str = "A (EXT. SHUNT)";
+            }
 
-            logData(ut61e.toCSVString());
+            ui.update(ut61e);
 
             if (alarm.isAlarm(ut61e.getValue())) {
                 alarm.alarm(ut61e.toString());
             }
+            if (ignore_ol && (ut61e.isOL() || ut61e.isUL())) {
+                //Log.i("GRAPH/LOG", "Skipped ol/ul value");
+                return;
+            }
+
+            graphUI.displayData(ut61e);
+            graphUI.updateDataInfo();
+
+            logData(ut61e.toCSVString());
         }
     }
 
@@ -405,6 +418,9 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         alarm.vibration = prefs.getBoolean("vibration", true);
         alarm.sound = prefs.getString("sound", "");
         log_dir = prefs.getString("log_folder", getString(R.string.log_folder));
+        ignore_ol = prefs.getBoolean("ignore_ol", false);
+        shunt_mode = prefs.getBoolean("shunt_mode", false);
+        shunt_value = Double.valueOf(prefs.getString("shunt_ohm", "1.0"));
     }
 
     @Override

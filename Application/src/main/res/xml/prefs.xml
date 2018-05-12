@@ -1,5 +1,16 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <PreferenceCategory android:title="Connection">
+        <EditTextPreference
+            android:defaultValue="0000ffe1-0000-1000-8000-00805f9b34fb"
+            android:icon="@drawable/ic_error_outline_black_24dp"
+            android:key="uuid"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/pref_uuid_desc"
+            android:title="@string/pref_uuid" />
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="Display">
         <EditTextPreference
             android:defaultValue="60"
@@ -31,17 +42,6 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:title="@string/pref_shunt_ohm"/>
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="Connection">
-        <EditTextPreference
-            android:defaultValue="0000ffe1-0000-1000-8000-00805f9b34fb"
-            android:icon="@drawable/ic_error_outline_black_24dp"
-            android:key="uuid"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:summary="@string/pref_uuid_desc"
-            android:title="@string/pref_uuid" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Alarm">

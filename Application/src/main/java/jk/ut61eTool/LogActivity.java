@@ -54,7 +54,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -89,6 +88,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     GraphUI graphUI;
     UI ui;
     Alarms alarm;
+    String log_dir;
 
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -352,10 +352,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         }
 
         createFolder();
-        logFile = new File(Environment.getExternalStorageDirectory() + File.separator + getString(R.string.log_folder) + File.separator + filename.getText());
-        Log.d("TAG", logFile.getPath()); //<-- check the log to make sure the path is correct.
-        Map<String, ?> prefs = PreferenceManager.getDefaultSharedPreferences(this).getAll();
-        Log.d(TAG, "PREFS: " + prefs.get("viewport"));
+        logFile = new File(Environment.getExternalStorageDirectory() + File.separator + log_dir + File.separator + filename.getText());
 
         Switch sw = findViewById(R.id.switch1);
         try {
@@ -375,7 +372,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     }
 
     private boolean createFolder() {
-        File folder = new File(Environment.getExternalStorageDirectory() + File.separator + getString(R.string.log_folder));
+        File folder = new File(Environment.getExternalStorageDirectory() + File.separator + log_dir);
         if (!folder.exists()) {
             return folder.mkdirs();
         }
@@ -407,6 +404,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         alarm.high_limit = Double.valueOf(prefs.getString("high_limit", "0"));
         alarm.vibration = prefs.getBoolean("vibration", true);
         alarm.sound = prefs.getString("sound", "");
+        log_dir = prefs.getString("log_folder", getString(R.string.log_folder));
     }
 
     @Override

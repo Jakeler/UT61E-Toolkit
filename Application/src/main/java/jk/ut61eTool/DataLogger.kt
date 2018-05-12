@@ -31,6 +31,7 @@ class DataLogger(private val context : Activity) {
     private fun createFolder(): Boolean {
         val folder = File(Environment.getExternalStorageDirectory().toString() + File.separator + log_dir)
         return if (!folder.exists()) {
+            Toast.makeText(context, context.getString(R.string.new_folder, folder.name), Toast.LENGTH_LONG).show()
             folder.mkdirs()
         } else false
     }
@@ -50,13 +51,13 @@ class DataLogger(private val context : Activity) {
             fWriter?.write("# " + Calendar.getInstance().time.toString() + "\n")
             fWriter?.write(UT61e_decoder.csvHeader + "\n")
             fWriter?.flush()
-            filename.setEnabled(false)
-            logRunning.setIndeterminate(true)
+            filename.isEnabled = false
+            logRunning.isIndeterminate = true
             lineCount = 0
-            switch.setChecked(true)
+            switch.isChecked = true
         } catch (e: IOException) {
             Toast.makeText(context, context.getString(R.string.storage_exp) + e.message, Toast.LENGTH_LONG).show()
-            switch.setChecked(false)
+            switch.isChecked = false
         }
 
     }
@@ -67,8 +68,8 @@ class DataLogger(private val context : Activity) {
             fWriter?.flush()
             fWriter?.close()
             fWriter = null
-            filename.setEnabled(true)
-            logRunning.setIndeterminate(false)
+            filename.isEnabled = true
+            logRunning.isIndeterminate = false
             (context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager).cancel(1)
 
         } catch (e: IOException) {
@@ -87,6 +88,6 @@ class DataLogger(private val context : Activity) {
         } catch (e: IOException) {
             Toast.makeText(context, context.getString(R.string.storage_exp) + e.message, Toast.LENGTH_LONG).show()
         }
-        fileInfo.text = context.getString(R.string.logfile_info, logFile?.getPath(), logFile?.length()?.div(1000.0), lineCount)
+        fileInfo.text = context.getString(R.string.logfile_info, logFile?.path, logFile?.length()?.div(1000.0), lineCount)
     }
 }

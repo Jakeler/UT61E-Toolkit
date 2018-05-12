@@ -17,6 +17,7 @@
     <string name="location_permission_exp">Sorry, Bluetooth Scanning requires at least coarse location access permission (on Android 6.0 and above).
         Please restart the app and grant the permission.</string>
     <string name="storage_exp">That did not work: </string>
+    <string name="new_folder">Created new folder: %s</string>
     <string name="label_data">Value:</string>
     <string name="label_device_address">Device address:</string>
     <string name="label_state">State:</string>

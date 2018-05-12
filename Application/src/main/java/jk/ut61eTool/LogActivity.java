@@ -16,7 +16,6 @@
 
 package jk.ut61eTool;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -31,29 +30,19 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.jake.UT61e_decoder;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Calendar;
 import java.util.UUID;
 
 /**
@@ -74,20 +63,13 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     private boolean mConnected = false;
     private UUID uuid;
 
-    private FileWriter fWriter;
-    private File logFile;
-    private EditText filename;
-    private TextView fileInfo;
-    private ProgressBar logRunning;
-    private int lineCount = 0;
-    private Toast startLogToast;
-
     NotificationManager mNotifyMgr;
     private boolean connection_wanted;
 
     GraphUI graphUI;
     UI ui;
     Alarms alarm;
+    DataLogger logger;
     private String log_dir;
     private boolean ignore_ol, shunt_mode;
     private double shunt_value;
@@ -182,6 +164,8 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
         alarm = new Alarms(this);
 
+        logger = new DataLogger(this);
+
         PreferenceManager.setDefaultValues(this, R.xml.prefs, false);
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
         loadSettings();
@@ -200,11 +184,8 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         mConnectionState = findViewById(R.id.connection_state);
         mDataField = findViewById(R.id.data_value);
 
-        logRunning = findViewById(R.id.logRunning);
-        filename = findViewById(R.id.filename);
-        fileInfo = findViewById(R.id.fileInfo);
-    }
 
+    }
 
 
     @Override
@@ -221,7 +202,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     @Override
     protected void onPause() {
         super.onPause();
-        if (fWriter == null && !alarm.enabled) {
+        if (logger.fWriter == null && !alarm.enabled) {
             unregisterReceiver(mGattUpdateReceiver);
         }
     }
@@ -231,9 +212,8 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         super.onDestroy();
         unbindService(mServiceConnection);
         mBluetoothLeService = null;
-        if (fWriter != null) {
-            stopLog();
-        }
+
+        logger.stopLog();
         mNotifyMgr.cancelAll();
     }
 
@@ -298,24 +278,10 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
             graphUI.displayData(ut61e);
             graphUI.updateDataInfo();
 
-            logData(ut61e.toCSVString());
+            logger.logData(ut61e.toCSVString());
+            putLogNotify(logger.lineCount);
         }
     }
-
-    private void logData(String data) {
-        if (fWriter != null) {
-            try {
-                fWriter.write(data + "\n");
-                fWriter.flush();
-                lineCount++;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            fileInfo.setText(getString(R.string.logfile_info, logFile.getPath(), logFile.length() / 1000.0, lineCount));
-            putNotify(lineCount);
-        }
-    }
-
 
     private void updateConnectionState() {
         runOnUiThread(() -> {
@@ -329,7 +295,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         });
     }
 
-    private void putNotify(int points) {
+    private void putLogNotify(int points) {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.tile)
@@ -352,56 +318,9 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     public void onSwitchClick(View v) {
         Switch sw = (Switch) v;
         if (sw.isChecked()) {
-            startLog();
+            logger.startLog();
         } else {
-            stopLog();
-        }
-    }
-
-
-    private void startLog() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 7);
-        }
-
-        createFolder();
-        logFile = new File(Environment.getExternalStorageDirectory() + File.separator + log_dir + File.separator + filename.getText());
-
-        Switch sw = findViewById(R.id.switch1);
-        try {
-            fWriter = new FileWriter(logFile, true);
-            fWriter.write("# " + Calendar.getInstance().getTime().toString() + "\n");
-            fWriter.write(UT61e_decoder.csvHeader + "\n");
-            fWriter.flush();
-            filename.setEnabled(false);
-            logRunning.setIndeterminate(true);
-            lineCount = 0;
-            sw.setChecked(true);
-        } catch (IOException e) {
-            startLogToast = Toast.makeText(this, getString(R.string.storage_exp) + e.getMessage(), Toast.LENGTH_LONG);
-            startLogToast.show();
-            sw.setChecked(false);
-        }
-    }
-
-    private boolean createFolder() {
-        File folder = new File(Environment.getExternalStorageDirectory() + File.separator + log_dir);
-        if (!folder.exists()) {
-            return folder.mkdirs();
-        }
-        return false;
-    }
-
-    private void stopLog() {
-        try {
-            fWriter.flush();
-            fWriter.close();
-            fWriter = null;
-            filename.setEnabled(true);
-            logRunning.setIndeterminate(false);
-            mNotifyMgr.cancel(1);
-        } catch (IOException | NullPointerException e) {
-            Toast.makeText(this, getString(R.string.storage_exp) + e.getMessage(), Toast.LENGTH_LONG).show();
+            logger.stopLog();
         }
     }
 
@@ -417,7 +336,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         alarm.high_limit = Double.valueOf(prefs.getString("high_limit", "0"));
         alarm.vibration = prefs.getBoolean("vibration", true);
         alarm.sound = prefs.getString("sound", "");
-        log_dir = prefs.getString("log_folder", getString(R.string.log_folder));
+        logger.log_dir = prefs.getString("log_folder", getString(R.string.log_folder));
         ignore_ol = prefs.getBoolean("ignore_ol", false);
         shunt_mode = prefs.getBoolean("shunt_mode", false);
         shunt_value = Double.valueOf(prefs.getString("shunt_ohm", "1.0"));
@@ -431,10 +350,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            if (startLogToast != null) {
-                startLogToast.cancel();
-            }
-            startLog();
+            logger.startLog();
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }

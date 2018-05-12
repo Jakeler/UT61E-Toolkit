@@ -74,10 +74,14 @@ class DataLogger(private val context : Activity) {
         }
     }
 
-    fun setRunning(running: Boolean) {
+    private fun setRunning(running: Boolean) {
         filename.isEnabled = !running
         logRunning.isIndeterminate = running
         switch.isChecked = running
+    }
+
+    fun isRunning(): Boolean {
+        return fWriter != null
     }
 
     fun logData(data: String) {

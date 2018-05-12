@@ -279,7 +279,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
             graphUI.updateDataInfo();
 
             logger.logData(ut61e.toCSVString());
-            putLogNotify(logger.lineCount);
+            if (logger.isRunning()) putLogNotify(logger.lineCount);
         }
     }
 

@@ -17,7 +17,7 @@ import java.util.*
 
 class DataLogger(private val context : Activity) {
 
-    @JvmField var fWriter: FileWriter? = null
+    private var fWriter: FileWriter? = null
     private var logFile: File? = null
     lateinit var log_dir : String
 

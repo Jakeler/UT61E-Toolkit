@@ -171,6 +171,11 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
         final Intent intent = getIntent();
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
+        if (mDeviceAddress == null) {
+            finish();
+            Log.e("LogActivity", "no device address");
+            startActivity(new Intent(this, StartActivity.class));
+        }
         getActionBar().setTitle(intent.getStringExtra(EXTRAS_DEVICE_NAME));
         getActionBar().setDisplayHomeAsUpEnabled(true);
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
@@ -201,7 +206,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     @Override
     protected void onPause() {
         super.onPause();
-        if (logger.fWriter == null && !alarm.enabled) {
+        if (!logger.isRunning() && !alarm.enabled) {
             unregisterReceiver(mGattUpdateReceiver);
         }
     }
@@ -209,7 +214,8 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mGattUpdateReceiver);
+        try {unregisterReceiver(mGattUpdateReceiver);}
+        catch(IllegalArgumentException e){Log.w("GATT RECEIVER", "already unregistered");}
         unbindService(mServiceConnection);
         mBluetoothLeService = null;
 
@@ -297,11 +303,10 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
     private void putLogNotify(int points) {
         NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
+                new NotificationCompat.Builder(this, "LOG")
                         .setSmallIcon(R.drawable.tile)
                         .setContentTitle("Logging Running")
                         .setContentText(points + " Data points");
-        mBuilder.setOngoing(true);
 
         Intent resultIntent = new Intent(this, LogActivity.class);
         resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -311,7 +316,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         mBuilder.setContentIntent(resultPendingIntent);
 
         mNotifyMgr.notify(1, mBuilder.build());
-
     }
 
     @SuppressWarnings("unused")

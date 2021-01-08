@@ -24,11 +24,11 @@ class ViewLogActivity : Activity() {
         val graphUI = GraphUI(this, findViewById(R.id.view_graph), findViewById(R.id.view_dataInfo), R.color.logPrimary)
         graphUI.viewSize = Int.MAX_VALUE
 
-        val file = intent.extras["filename"] as File
+        val file = intent.extras?.get("filename") as File
 
         Log.d("FILE", file.length().toString())
 
-        actionBar.title = getString(R.string.logview_actionBar_title, file.name)
+        actionBar?.title = getString(R.string.logview_actionBar_title, file.name)
 
         val csvFormat = CSVFormat.RFC4180.withDelimiter(';').withCommentMarker('#')
         val parser = CSVParser.parse(file, charset("UTF-8"), csvFormat)

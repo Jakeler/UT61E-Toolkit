@@ -7,12 +7,12 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Environment
 import android.preference.PreferenceManager
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import java.io.File
 import java.util.*
 
@@ -52,7 +52,7 @@ class FileSelectActivity : Activity() {
             Toast.makeText(this, "Folder contains no files, check your settings", Toast.LENGTH_SHORT).show()
 
         val arrayAdapter = object : ArrayAdapter<String>(this, R.layout.listitem_files, R.id.filename, files) {
-            override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val view = super.getView(position, convertView, parent)
                 val file = dir.listFiles()[position]
 

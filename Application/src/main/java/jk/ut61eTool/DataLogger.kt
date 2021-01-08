@@ -6,9 +6,9 @@ import android.app.NotificationManager
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.pm.PackageManager
 import android.os.Environment
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
 import android.widget.*
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.jake.UT61e_decoder
 import java.io.File
 import java.io.FileWriter

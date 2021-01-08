@@ -1,9 +1,10 @@
 package jk.ut61eTool;
 
 import android.app.Activity;
-import android.support.v4.content.ContextCompat;
 import android.view.MotionEvent;
 import android.widget.TextView;
+
+import androidx.core.content.ContextCompat;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.data.BarData;

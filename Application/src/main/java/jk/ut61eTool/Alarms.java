@@ -1,7 +1,8 @@
 package jk.ut61eTool;
 
 import android.net.Uri;
-import android.support.v4.app.NotificationCompat;
+
+import androidx.core.app.NotificationCompat;
 
 import java.util.Arrays;
 

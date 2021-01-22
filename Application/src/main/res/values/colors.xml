@@ -4,11 +4,14 @@
     <color name="startPrimaryDark">#000000</color>
     <color name="startTextPrimary">#ffffff</color>
 
-    <color name="blePrimary">#388e3c</color>
-    <color name="blePrimaryDark">#1b5e20</color>
-    <color name="bleTextPrimary">#000000</color>
+    <color name="blePrimary">#c62828</color>
+    <color name="blePrimaryDark">#8e0000</color>
+    <color name="bleTextPrimary">#fff</color>
 
-    <color name="logPrimary">#d50000</color>
-    <color name="logPrimaryDark">#b71c1c</color>
-    <color name="logTextPrimary">#000000</color>
+    <color name="logPrimary">#1976d2</color>
+    <color name="logPrimaryDark">#004ba0</color>
+    <color name="logTextPrimary">#fff</color>
+
+    <color name="settingsPrimary">#616161</color>
+    <color name="settingsText">#fff</color>
 </resources>

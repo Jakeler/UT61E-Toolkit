@@ -3,15 +3,17 @@ package jk.ut61eTool
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.TextView
+import kotlinx.android.synthetic.main.activity_start.*
 
 class StartActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
-        findViewById<TextView>(R.id.version).setText("Version: " + BuildConfig.VERSION_NAME)
+        version.text = "Version: ${BuildConfig.VERSION_NAME}"
     }
 
     fun startScan(v : View) {

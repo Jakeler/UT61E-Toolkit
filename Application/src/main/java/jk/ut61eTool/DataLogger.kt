@@ -10,6 +10,7 @@ import android.widget.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.jake.UT61e_decoder
+import kotlinx.android.synthetic.main.log_activity.*
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
@@ -21,10 +22,10 @@ class DataLogger(private val context : Activity) {
     private var logFile: File? = null
     lateinit var log_dir : String
 
-    private var filename: EditText = context.findViewById(R.id.filename)
-    private var fileInfo: TextView = context.findViewById(R.id.fileInfo)
-    private var logRunning: ProgressBar = context.findViewById(R.id.logRunning)
-    private val switch = context.findViewById<Switch>(R.id.switch1)
+    private var filename: EditText = context.filename
+    private var fileInfo: TextView = context.fileInfo
+    private var logRunning: ProgressBar = context.logRunning
+    private val switch = context.switch1
     @JvmField var lineCount = 0
 
 

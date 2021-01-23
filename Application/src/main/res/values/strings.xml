@@ -43,6 +43,12 @@
 
     <string name="parse_error_toast">Could not parse CSV, no header (time) comment found!</string>
 
+    <string name="alarm_channel_name">Alarms</string>
+    <string name="alarm_channel_desc">Notifications if custom condition is met</string>
+    <string name="log_channel_name">Logging</string>
+    <string name="log_channel_desc">Indicates running data logging</string>
+
+
     <!-- Menu items -->
     <string name="menu_connect">Connect</string>
     <string name="menu_disconnect">Disconnect</string>

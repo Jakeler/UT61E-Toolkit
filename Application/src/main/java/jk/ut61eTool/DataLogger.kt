@@ -1,13 +1,19 @@
 package jk.ut61eTool
 
 import android.Manifest
-import android.app.Activity
+import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.Context.NOTIFICATION_SERVICE
+import android.app.PendingIntent
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Environment
-import android.widget.*
+import android.widget.EditText
+import android.widget.ProgressBar
+import android.widget.TextView
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.jake.UT61e_decoder
 import kotlinx.android.synthetic.main.log_activity.*
@@ -16,7 +22,9 @@ import java.io.FileWriter
 import java.io.IOException
 import java.util.*
 
-class DataLogger(private val context : Activity) {
+
+class DataLogger(private val context: LogActivity) {
+    val CHANNEL_ID = "log"
 
     private var fWriter: FileWriter? = null
     private var logFile: File? = null
@@ -27,6 +35,33 @@ class DataLogger(private val context : Activity) {
     private var logRunning: ProgressBar = context.logRunning
     private val switch = context.switch1
     @JvmField var lineCount = 0
+
+    init {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = context.getString(R.string.log_channel_name)
+            // Register the channel with the system
+            val channel = NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_LOW)
+            channel.description = context.getString(R.string.log_channel_name)
+            context.mNotifyMgr.createNotificationChannel(channel)
+        }
+    }
+
+    private fun putLogNotify() {
+        val mBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.drawable.tile)
+                .setContentTitle("Logging Running")
+                .setContentText("${this.lineCount} Data points")
+
+        val resultIntent = Intent(context, LogActivity::class.java)
+        resultIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        resultIntent.action = "android.intent.action.MAIN"
+        resultIntent.addCategory("android.intent.category.LAUNCHER")
+        val resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        mBuilder.setContentIntent(resultPendingIntent)
+        context.mNotifyMgr.notify(42, mBuilder.build())
+    }
 
 
     private fun createFolder(): Boolean {
@@ -69,7 +104,7 @@ class DataLogger(private val context : Activity) {
             fWriter?.close()
             fWriter = null
             setRunning(false)
-            (context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager).cancel(1)
+            context.mNotifyMgr.cancel(42)
         } catch (e: IOException) {
             Toast.makeText(context, context.getString(R.string.storage_exp) + e.message, Toast.LENGTH_LONG).show()
         }
@@ -86,7 +121,7 @@ class DataLogger(private val context : Activity) {
     }
 
     fun logData(data: String) {
-        if (fWriter == null) return
+        if (!isRunning()) return
 
         try {
             fWriter?.write(data + "\n")
@@ -96,5 +131,7 @@ class DataLogger(private val context : Activity) {
             Toast.makeText(context, context.getString(R.string.storage_exp) + e.message, Toast.LENGTH_LONG).show()
         }
         fileInfo.text = context.getString(R.string.logfile_info, logFile?.path, logFile?.length()?.div(1000.0), lineCount)
+
+        putLogNotify()
     }
 }

@@ -18,7 +18,6 @@ package jk.ut61eTool;
 
 import android.app.Activity;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.BroadcastReceiver;
@@ -40,7 +39,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.NotificationCompat;
 
 import com.jake.UT61e_decoder;
 
@@ -162,8 +160,8 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         graphUI = new GraphUI(this, findViewById(R.id.graph), findViewById(R.id.dataInfo), R.color.blePrimary);
         ui = new UI(this);
 
+        mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         alarm = new Alarms(this);
-
         logger = new DataLogger(this);
 
         PreferenceManager.setDefaultValues(this, R.xml.prefs, false);
@@ -181,8 +179,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         getActionBar().setDisplayHomeAsUpEnabled(true);
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-
-        mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
     }
 
     private void findViews() {
@@ -286,7 +282,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
             graphUI.updateDataInfo();
 
             logger.logData(ut61e.toCSVString());
-            if (logger.isRunning()) putLogNotify(logger.lineCount);
         }
     }
 
@@ -300,23 +295,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
                 mConnectionState.setText(R.string.working);
             }
         });
-    }
-
-    private void putLogNotify(int points) {
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this, "LOG")
-                        .setSmallIcon(R.drawable.tile)
-                        .setContentTitle("Logging Running")
-                        .setContentText(points + " Data points");
-
-        Intent resultIntent = new Intent(this, LogActivity.class);
-        resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        resultIntent.setAction("android.intent.action.MAIN");
-        resultIntent.addCategory("android.intent.category.LAUNCHER");
-        PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mBuilder.setContentIntent(resultPendingIntent);
-
-        mNotifyMgr.notify(1, mBuilder.build());
     }
 
     @SuppressWarnings("unused")
@@ -340,7 +318,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         alarm.low_limit = Double.valueOf(prefs.getString("low_limit", "0"));
         alarm.high_limit = Double.valueOf(prefs.getString("high_limit", "0"));
         alarm.vibration = prefs.getBoolean("vibration", true);
-        alarm.sound = prefs.getString("sound", "");
         logger.log_dir = prefs.getString("log_folder", getString(R.string.log_folder));
         ignore_ol = prefs.getBoolean("ignore_ol", false);
         shunt_mode = prefs.getBoolean("shunt_mode", false);

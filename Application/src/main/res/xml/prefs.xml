@@ -91,13 +91,13 @@
             android:icon="@drawable/ic_vibration_black_24dp"
             android:key="vibration"
             android:title="@string/pref_vibration" />
-        <RingtonePreference
-            android:defaultValue="content://settings/system/notification_sound"
-            android:dependency="alarm_enabled"
-            android:icon="@drawable/ic_ring_volume_black_24dp"
-            android:key="sound"
-            android:ringtoneType="notification"
-            android:title="@string/pref_alarm_sound" />
+<!--        <RingtonePreference-->
+<!--            android:defaultValue="content://settings/system/notification_sound"-->
+<!--            android:dependency="alarm_enabled"-->
+<!--            android:icon="@drawable/ic_ring_volume_black_24dp"-->
+<!--            android:key="sound"-->
+<!--            android:ringtoneType="notification"-->
+<!--            android:title="@string/pref_alarm_sound" />-->
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Filesystem">

@@ -46,7 +46,7 @@
     </style>
 
 
-    <style name="TextContrast" parent="TextAppearance.AppCompat">
+    <style name="TextContrast" parent="android:TextAppearance">
         <item name="android:textColor">#000</item>
     </style>
 </resources>

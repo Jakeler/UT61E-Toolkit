@@ -318,7 +318,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         alarm.low_limit = Double.valueOf(prefs.getString("low_limit", "0"));
         alarm.high_limit = Double.valueOf(prefs.getString("high_limit", "0"));
         alarm.vibration = prefs.getBoolean("vibration", true);
-        logger.log_dir = prefs.getString("log_folder", getString(R.string.log_folder));
+        logger.log_dir = prefs.getString("log_folder", "");
         ignore_ol = prefs.getBoolean("ignore_ol", false);
         shunt_mode = prefs.getBoolean("shunt_mode", false);
         shunt_value = Double.valueOf(prefs.getString("shunt_ohm", "1.0"));

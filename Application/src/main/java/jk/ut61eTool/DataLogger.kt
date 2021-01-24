@@ -1,20 +1,17 @@
 package jk.ut61eTool
 
-import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import com.jake.UT61e_decoder
 import kotlinx.android.synthetic.main.log_activity.*
@@ -66,18 +63,23 @@ class DataLogger(private val context: LogActivity) {
 
 
     fun startLog() {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(context, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 7)
-            setRunning(false)
-            return
-        }
-
         val uri = Uri.parse(log_dir)
-        val dirFile = DocumentFile.fromTreeUri(context, uri) ?: return
-        logFile = dirFile.createFile("text/csv", filename.text.toString()) ?: return
-        val fd = context.contentResolver.openFileDescriptor(logFile.uri, "w")
-
+        if (uri.scheme == null) {
+            handleErr(context.getString(R.string.error_folder_not_setup))
+        }
         try {
+            val dirFile = DocumentFile.fromTreeUri(context, uri)
+                    ?: throw IOException(context.getString(R.string.error_folder_inacc))
+            // Open file if it exists, create new otherwise
+            val dfile = dirFile.findFile(filename.text.toString())
+            if (dfile == null) {
+                logFile = dirFile.createFile("text/csv", filename.text.toString())
+                    ?: throw IOException(context.getString(R.string.error_folder_inacc))
+            } else {
+                logFile = dfile
+            }
+            val fd = context.contentResolver.openFileDescriptor(logFile.uri, "w")
+
             fWriter = FileWriter(fd?.fileDescriptor)
             fWriter?.write("# " + Calendar.getInstance().time.toString() + "\n")
             fWriter?.write(UT61e_decoder.csvHeader + "\n")
@@ -85,10 +87,8 @@ class DataLogger(private val context: LogActivity) {
             setRunning(true)
             lineCount = 0
         } catch (e: IOException) {
-            Toast.makeText(context, context.getString(R.string.storage_exp) + e.message, Toast.LENGTH_LONG).show()
-            setRunning(false)
+            handleErr(e)
         }
-
     }
 
     fun stopLog() {
@@ -100,7 +100,7 @@ class DataLogger(private val context: LogActivity) {
             setRunning(false)
             context.mNotifyMgr.cancel(42)
         } catch (e: IOException) {
-            Toast.makeText(context, context.getString(R.string.storage_exp) + e.message, Toast.LENGTH_LONG).show()
+            handleErr(e)
         }
     }
 
@@ -114,6 +114,18 @@ class DataLogger(private val context: LogActivity) {
         return fWriter != null
     }
 
+    fun handleErr(err: Any) {
+        if (err is String) {
+            Toast.makeText(context, err, Toast.LENGTH_LONG).show()
+            Log.e("DataLogger", "handleErr: $err")
+        } else if (err is Exception) {
+            Toast.makeText(context, context.getString(R.string.storage_exp, err.message), Toast.LENGTH_LONG).show()
+            Log.e("DataLogger", "handleErr: $err")
+        }
+        setRunning(false)
+        fWriter = null
+    }
+
     fun logData(data: String) {
         if (!isRunning()) return
 
@@ -122,9 +134,13 @@ class DataLogger(private val context: LogActivity) {
             fWriter?.flush()
             lineCount++
         } catch (e: IOException) {
-            Toast.makeText(context, context.getString(R.string.storage_exp) + e.message, Toast.LENGTH_LONG).show()
+            handleErr(e)
+
+            // Retry to open file, does not get reached again because of isRunning
+            startLog()
+            logData(data)
         }
-        fileInfo.text = context.getString(R.string.logfile_info, logFile.name, logFile.length()/1000.0, lineCount)
+        fileInfo.text = context.getString(R.string.logfile_info, logFile.uri.lastPathSegment, logFile.length()/1000.0, lineCount)
 
         putLogNotify()
     }

@@ -16,7 +16,7 @@
     <string name="ble_not_supported">BLE is not supported</string>
     <string name="location_permission_exp">Sorry, Bluetooth Scanning requires at least coarse location access permission (on Android 6.0 and above).
         Please restart the app and grant the permission.</string>
-    <string name="storage_exp">That did not work: </string>
+    <string name="storage_exp">Write error: %s</string>
     <string name="new_folder">Created new folder: %s</string>
     <string name="label_data">Value:</string>
     <string name="label_device_address">Device address:</string>
@@ -36,7 +36,7 @@
     <string name="start_log_view">View Recorded Log</string>
     <string name="start_setting">Change Settings</string>
 
-    <string name="logfile_info">Path: %s\nSize: %.2f KB  (%d new data points)</string>
+    <string name="logfile_info">Path: %s\nSize: %.2f KB with %d new data points</string>
     <string name="graphdata_info">Max: %5.3f | Min: %5.3f | Avg: %5.3f | Std.dev: %5.3f</string>
 
     <string name="logview_actionBar_title">View: %s</string>
@@ -94,6 +94,11 @@
     <string name="pref_logdir">Log folder: %s</string>
     <string name="pref_logdir_desc">Setup directory access for log files</string>
     <string name="logdir_digits">abcdefghijklmnopqrstuvwxyzABCDEFGIJKLMOPQRSTUVWQYZ _-0123456789</string>
+
+    <string name="error_folder_not_setup">No folder setup, please select one in the settings first!</string>
+    <string name="error_folder_missing">Folder not existing, check your settings</string>
+    <string name="error_folder_empty">Folder contains no files, check your settings</string>
+    <string name="error_folder_inacc">Could not open file under selected path</string>
 
     <string name="title_activity_view">Select Logfile</string>
 </resources>

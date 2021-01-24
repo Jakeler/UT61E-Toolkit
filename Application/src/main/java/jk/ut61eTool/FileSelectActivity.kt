@@ -1,17 +1,13 @@
 package jk.ut61eTool
 
-import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.preference.PreferenceManager
 import java.util.*
@@ -27,21 +23,22 @@ class FileSelectActivity : Activity() {
     }
 
     private fun populateListView() {
-        val uriEnc = PreferenceManager.getDefaultSharedPreferences(this).getString("log_folder", getString(R.string.log_folder))
+        val uriEnc = PreferenceManager.getDefaultSharedPreferences(this).getString("log_folder", null)
         if (uriEnc == null) {
-            Toast.makeText(this, "No folder setup, check your settings", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.error_folder_not_setup), Toast.LENGTH_LONG).show()
+            finish()
             return
         }
         val dir = DocumentFile.fromTreeUri(this, Uri.parse(uriEnc))
         val files = dir?.listFiles()
         if (files == null) {
             Log.w("FILE SELECT", "no files")
-            Toast.makeText(this, "Folder not existing, check your settings", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.error_folder_missing), Toast.LENGTH_SHORT).show()
             finish()
             return
         }
         if (files.isEmpty())
-            Toast.makeText(this, "Folder contains no files, check your settings", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.error_folder_empty), Toast.LENGTH_SHORT).show()
 
         val arrayAdapter = object : ArrayAdapter<DocumentFile>(this, R.layout.listitem_files, R.id.filename, files) {
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {

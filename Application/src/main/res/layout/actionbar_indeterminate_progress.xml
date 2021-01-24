@@ -14,10 +14,16 @@
   limitations under the License.
   -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="wrap_content"
              android:layout_width="56dp"
              android:minWidth="56dp">
-    <ProgressBar android:layout_width="32dp"
-                 android:layout_height="32dp"
-                 android:layout_gravity="center"/>
+
+    <ProgressBar
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/bleTextPrimary" />
+
 </FrameLayout>

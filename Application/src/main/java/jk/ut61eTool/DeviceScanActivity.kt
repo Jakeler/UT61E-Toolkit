@@ -47,6 +47,14 @@ class DeviceScanActivity : ListActivity() {
     private var mScanning = false
     private var mHandler: Handler? = null
 
+    companion object {
+        private const val REQUEST_ENABLE_BT = 1
+        private const val LOCATION_PERMISSION = 7
+
+        // Stops scanning after time ins ms
+        private const val SCAN_PERIOD: Long = 30_000
+    }
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         actionBar?.setTitle(R.string.title_devices)
@@ -256,20 +264,11 @@ class DeviceScanActivity : ListActivity() {
 
     }
 
-
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
             Toast.makeText(this, R.string.location_permission_exp, Toast.LENGTH_LONG).show()
             finish()
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-
-    companion object {
-        private const val REQUEST_ENABLE_BT = 1
-        private const val LOCATION_PERMISSION = 7
-
-        // Stops scanning after 10 seconds.
-        private const val SCAN_PERIOD: Long = 10000
     }
 }

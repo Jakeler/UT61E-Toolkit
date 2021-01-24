@@ -92,7 +92,7 @@
     <string name="pref_alarm_sound">Ringtone</string>
 
     <string name="pref_logdir">Log file folder</string>
-    <string name="pref_logdir_desc">Directory name for log files, relative to ExternalStorage</string>
+    <string name="pref_logdir_desc">Setup directory access for log files</string>
     <string name="logdir_digits">abcdefghijklmnopqrstuvwxyzABCDEFGIJKLMOPQRSTUVWQYZ _-0123456789</string>
 
     <string name="title_activity_view">Select Logfile</string>

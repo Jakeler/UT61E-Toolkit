@@ -101,10 +101,7 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Filesystem">
-        <EditTextPreference
-            android:defaultValue="@string/log_folder"
-            android:inputType="text"
-            android:digits="@string/logdir_digits"
+        <Preference
             android:key="log_folder"
             android:icon="@drawable/ic_folder_open_black_24dp"
             android:title="@string/pref_logdir"

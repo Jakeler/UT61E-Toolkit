@@ -6,8 +6,8 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -15,9 +15,9 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.documentfile.provider.DocumentFile
 import com.jake.UT61e_decoder
 import kotlinx.android.synthetic.main.log_activity.*
-import java.io.File
 import java.io.FileWriter
 import java.io.IOException
 import java.util.*
@@ -27,7 +27,7 @@ class DataLogger(private val context: LogActivity) {
     val CHANNEL_ID = "log"
 
     private var fWriter: FileWriter? = null
-    private var logFile: File? = null
+    private lateinit var logFile: DocumentFile
     lateinit var log_dir : String
 
     private var filename: EditText = context.filename
@@ -64,13 +64,6 @@ class DataLogger(private val context: LogActivity) {
     }
 
 
-    private fun createFolder(): Boolean {
-        val folder = File(Environment.getExternalStorageDirectory().toString() + File.separator + log_dir)
-        return if (!folder.exists()) {
-            Toast.makeText(context, context.getString(R.string.new_folder, folder.name), Toast.LENGTH_LONG).show()
-            folder.mkdirs()
-        } else false
-    }
 
     fun startLog() {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -79,12 +72,13 @@ class DataLogger(private val context: LogActivity) {
             return
         }
 
-        createFolder()
-
-        logFile = File(Environment.getExternalStorageDirectory().toString() + File.separator + log_dir + File.separator + filename.text)
+        val uri = Uri.parse(log_dir)
+        val dirFile = DocumentFile.fromTreeUri(context, uri) ?: return
+        logFile = dirFile.createFile("text/csv", filename.text.toString()) ?: return
+        val fd = context.contentResolver.openFileDescriptor(logFile.uri, "w")
 
         try {
-            fWriter = FileWriter(logFile, true)
+            fWriter = FileWriter(fd?.fileDescriptor)
             fWriter?.write("# " + Calendar.getInstance().time.toString() + "\n")
             fWriter?.write(UT61e_decoder.csvHeader + "\n")
             fWriter?.flush()
@@ -130,7 +124,7 @@ class DataLogger(private val context: LogActivity) {
         } catch (e: IOException) {
             Toast.makeText(context, context.getString(R.string.storage_exp) + e.message, Toast.LENGTH_LONG).show()
         }
-        fileInfo.text = context.getString(R.string.logfile_info, logFile?.path, logFile?.length()?.div(1000.0), lineCount)
+        fileInfo.text = context.getString(R.string.logfile_info, logFile.name, logFile.length()/1000.0, lineCount)
 
         putLogNotify()
     }

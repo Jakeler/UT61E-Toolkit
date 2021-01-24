@@ -1,6 +1,7 @@
 package jk.ut61eTool
 
 import android.app.Activity
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -8,10 +9,10 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.documentfile.provider.DocumentFile
 import com.jake.UT61e_decoder
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
-import java.io.File
 import java.util.*
 
 
@@ -24,14 +25,17 @@ class ViewLogActivity : Activity() {
         val graphUI = GraphUI(this, findViewById(R.id.view_graph), findViewById(R.id.view_dataInfo), R.color.logPrimary)
         graphUI.viewSize = Int.MAX_VALUE
 
-        val file = intent.extras?.get("filename") as File
+        val fileUri = intent.extras?.get("filename") as Uri
+        val file = DocumentFile.fromSingleUri(this, fileUri) ?: return
+        val stream = contentResolver.openInputStream(fileUri)
+
 
         Log.d("FILE", file.length().toString())
 
         actionBar?.title = getString(R.string.logview_actionBar_title, file.name)
 
         val csvFormat = CSVFormat.RFC4180.withDelimiter(';').withCommentMarker('#')
-        val parser = CSVParser.parse(file, charset("UTF-8"), csvFormat)
+        val parser = CSVParser.parse(stream, charset("UTF-8"), csvFormat)
 
         val record_list = parser.records
         val time_list = record_list.filter { it.hasComment() }

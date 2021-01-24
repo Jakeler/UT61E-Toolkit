@@ -31,10 +31,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
-import android.widget.ListView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
@@ -174,9 +171,10 @@ class DeviceScanActivity : ListActivity() {
     }
 
     internal class ViewHolder {
-        var deviceName: TextView? = null
-        var deviceAddress: TextView? = null
-        var deviceRssi: TextView? = null
+        lateinit var deviceName: TextView
+        lateinit var deviceAddress: TextView
+        lateinit var deviceRssi: TextView
+        lateinit var deviceBar: ProgressBar
     }
 
     // Adapter for holding devices found through scanning.
@@ -225,6 +223,7 @@ class DeviceScanActivity : ListActivity() {
                 viewHolder.deviceAddress = view.findViewById<TextView>(R.id.device_address)
                 viewHolder.deviceName = view.findViewById<TextView>(R.id.device_name)
                 viewHolder.deviceRssi = view.findViewById<TextView>(R.id.device_rssi)
+                viewHolder.deviceBar = view.findViewById<ProgressBar>(R.id.rssi_bar)
                 view.tag = viewHolder
             } else {
                 view = pview
@@ -234,11 +233,16 @@ class DeviceScanActivity : ListActivity() {
             val item = getItem(i) as ScanResult
             val deviceName = item.device.name
             if (deviceName != null && deviceName.isNotEmpty())
-                viewHolder.deviceName?.text = "$deviceName"
+                viewHolder.deviceName.text = "$deviceName"
             else
-                viewHolder.deviceName?.setText(R.string.unknown_device)
-            viewHolder.deviceAddress?.text = "MAC: ${item.device.address}"
-            viewHolder.deviceRssi?.text = "Rssi: ${item.rssi}"
+                viewHolder.deviceName.setText(R.string.unknown_device)
+            viewHolder.deviceAddress.text = "MAC: ${item.device.address}"
+            viewHolder.deviceRssi.text = "RSSI: ${item.rssi} dBm"
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                viewHolder.deviceBar.setProgress(127+item.rssi, true)
+            } else {
+                viewHolder.deviceBar.progress = 127+item.rssi
+            }
 
             return view
         }

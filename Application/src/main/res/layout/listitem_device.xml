@@ -35,11 +35,27 @@
         android:textAppearance="@style/TextContrast"
         android:textSize="14sp" />
 
-    <TextView
-        android:id="@+id/device_rssi"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="rssi"
-        android:textAppearance="@style/TextContrast"
-        android:textSize="14sp" />
+        android:layout_height="match_parent">
+
+        <ProgressBar
+            android:id="@+id/rssi_bar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="127"
+            android:progress="-50"
+            android:progressTint="@color/blePrimary"
+            android:scaleY="8" />
+
+        <TextView
+            android:id="@+id/device_rssi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="rssi"
+            android:textColor="@color/bleTextPrimary"
+            android:textSize="14sp" />
+    </FrameLayout>
+
 </LinearLayout>

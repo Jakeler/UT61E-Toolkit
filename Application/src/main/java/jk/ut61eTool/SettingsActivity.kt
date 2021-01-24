@@ -2,6 +2,8 @@ package jk.ut61eTool
 
 import android.app.Activity
 import android.content.Intent
+import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -17,7 +19,11 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     class MyPreferenceFragment : PreferenceFragmentCompat() {
-        val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        private val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        private val DIR_PREF_KEY = "log_folder"
+
+        private var dirPref: Preference? = null
+        private lateinit var prefs: SharedPreferences
 
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
 //            super.onCreate(savedInstanceState)
@@ -28,11 +34,26 @@ class SettingsActivity : AppCompatActivity() {
                 Version: ${BuildConfig.VERSION_NAME} 
                 """.trimIndent()
 
-            val dirPref = findPreference<Preference>("log_folder")
+            dirPref = findPreference<Preference>("log_folder")
             dirPref?.setOnPreferenceClickListener {
-                Log.d("TAG", "onCreatePreferences: $it")
                 openDirectory()
                 true
+            }
+
+            prefs = PreferenceManager.getDefaultSharedPreferences(activity)
+            refreshUI()
+        }
+
+        fun refreshUI() {
+            prefs.getString(DIR_PREF_KEY, "").let {
+                val uri = Uri.parse(it)
+                if (uri.scheme == null) {
+                    prefs.edit().remove(DIR_PREF_KEY).apply()
+                    dirPref?.title = getString(R.string.pref_logdir, "NOT SET")
+                    Log.d("Settings", "refreshUI: deleted wrong uri '$it'")
+                } else {
+                    dirPref?.title = getString(R.string.pref_logdir, uri.lastPathSegment)
+                }
             }
         }
 
@@ -52,9 +73,12 @@ class SettingsActivity : AppCompatActivity() {
 
             val uri = data?.data ?: return
             PreferenceManager.getDefaultSharedPreferences(activity).edit().apply {
-                putString("log_folder", uri.toString())
-                apply()
+//                putString(DIR_PREF_KEY, uri.toString())
+                putString(DIR_PREF_KEY, uri.toString())
+                commit()
             }
+
+            refreshUI()
             Log.d("Settings", "onActivityResult: $requestCode $resultCode ${uri.lastPathSegment}")
 
             activity?.contentResolver?.takePersistableUriPermission(uri, flags)

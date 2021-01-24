@@ -21,6 +21,14 @@
             android:title="@string/pref_viewport"/>
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="Filesystem">
+        <Preference
+            android:key="log_folder"
+            android:icon="@drawable/ic_folder_open_black_24dp"
+            android:title="@string/pref_logdir"
+            android:summary="@string/pref_logdir_desc"/>
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="Data processing">
         <CheckBoxPreference
             android:defaultValue="false"
@@ -100,13 +108,6 @@
 <!--            android:title="@string/pref_alarm_sound" />-->
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Filesystem">
-        <Preference
-            android:key="log_folder"
-            android:icon="@drawable/ic_folder_open_black_24dp"
-            android:title="@string/pref_logdir"
-            android:summary="@string/pref_logdir_desc"/>
-    </PreferenceCategory>
 
     <PreferenceCategory android:title="Info">
         <Preference

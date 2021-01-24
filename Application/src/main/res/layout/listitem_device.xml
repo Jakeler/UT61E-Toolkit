@@ -34,4 +34,12 @@
         android:text="mac"
         android:textAppearance="@style/TextContrast"
         android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/device_rssi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="rssi"
+        android:textAppearance="@style/TextContrast"
+        android:textSize="14sp" />
 </LinearLayout>

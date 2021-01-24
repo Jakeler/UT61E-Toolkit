@@ -22,20 +22,8 @@ class FileSelectActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_select_file)
         actionBar?.setDisplayHomeAsUpEnabled(true)
+        populateListView()
 
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            populateListView()
-        } else {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 7)
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            populateListView()
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     private fun populateListView() {

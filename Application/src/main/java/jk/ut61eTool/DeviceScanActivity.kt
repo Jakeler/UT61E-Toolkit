@@ -62,12 +62,22 @@ class DeviceScanActivity : ListActivity() {
         if (!packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show()
             finish()
+            return
         }
 
         // Initializes a Bluetooth adapter.  For API level 18 and above, get a reference to
         // BluetoothAdapter through BluetoothManager.
         val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
-        mBluetoothAdapter = bluetoothManager.adapter
+        bluetoothManager.adapter.let {
+            // Checks if Bluetooth is supported on the device.
+            if (it == null) {
+                Toast.makeText(this, R.string.error_bluetooth_not_supported, Toast.LENGTH_SHORT).show();
+                finish();
+                return;
+            } else {
+                mBluetoothAdapter = it
+            }
+        }
 
         // Check for coarse location permission to allow BLE scanning
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {

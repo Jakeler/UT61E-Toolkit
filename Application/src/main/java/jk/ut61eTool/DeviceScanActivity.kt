@@ -116,28 +116,28 @@ class DeviceScanActivity : ListActivity() {
     override fun onResume() {
         super.onResume()
 
-        // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
-        // fire an intent to display a dialog asking the user to grant permission to enable it.
-        if (!mBluetoothAdapter.isEnabled) {
-            if (!mBluetoothAdapter.isEnabled) {
-                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
-            }
-        }
-
         // Initializes list view adapter.
         mLeDeviceListAdapter = LeDeviceListAdapter()
         listAdapter = mLeDeviceListAdapter
-        scanLeDevice(true)
+
+        // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
+        // fire an intent to display a dialog asking the user to grant permission to enable it.
+        if (!mBluetoothAdapter.isEnabled) {
+            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
+        } else {
+            scanLeDevice(true)
+        }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         // User chose not to enable Bluetooth.
         if (requestCode == REQUEST_ENABLE_BT && resultCode == RESULT_CANCELED) {
             finish()
             return
         }
         super.onActivityResult(requestCode, resultCode, data)
+        scanLeDevice(true)
     }
 
     override fun onPause() {

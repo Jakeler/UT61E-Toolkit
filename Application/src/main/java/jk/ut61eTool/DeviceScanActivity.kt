@@ -186,8 +186,8 @@ class DeviceScanActivity : ListActivity() {
             mLeDevices.forEachIndexed { i, el ->
                 index = if (el.device.address == result.device.address) i else index
             }
-            // Replace with new result if same device address
-            if (index > 0)
+            // Replace with new result if its same device address
+            if (index != -1)
                 mLeDevices[index] = result
             else
                 mLeDevices.add(result)

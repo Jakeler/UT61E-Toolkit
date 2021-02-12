@@ -65,11 +65,12 @@ android {
         }
         androidTest.setRoot('tests')
         androidTest.java.srcDirs = ['tests/src']
-
     }
 
+    buildFeatures {
+        dataBinding true
+    }
 
 }
 
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'

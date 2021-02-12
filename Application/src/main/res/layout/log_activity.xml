@@ -13,190 +13,197 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:theme="@style/Theme.LogContent"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_margin="4dp"
-    android:orientation="vertical"
-    android:weightSum="1">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
 
     <LinearLayout
+        android:theme="@style/Theme.LogContent"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:layout_margin="4dp"
+        android:orientation="vertical"
+        android:weightSum="1">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/label_state"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/connection_state"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="@string/disconnected"
-            android:textSize="18sp" />
-    </LinearLayout>
+            android:layout_margin="10dp"
+            android:orientation="horizontal">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_state"
+                android:textSize="18sp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/label_data"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            <TextView
+                android:id="@+id/connection_state"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="@string/disconnected"
+                android:textSize="18sp" />
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/data_value"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="@string/no_data"
-            android:textColor="@android:color/black"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:layout_margin="10dp"
+            android:orientation="horizontal">
 
-    </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_data"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="43dp"
-        android:orientation="horizontal">
+            <TextView
+                android:id="@+id/data_value"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="@string/no_data"
+                android:textColor="@android:color/black"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="43dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/Neg"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:alpha="0.2"
+                android:background="@android:color/holo_orange_dark"
+                android:elevation="4dp"
+                android:gravity="center"
+                android:text="---"
+                android:textAlignment="center"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/OL"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="4dp"
+                android:layout_weight="1.00"
+                android:alpha="0.2"
+                android:background="@android:color/holo_red_dark"
+                android:elevation="4dp"
+                android:gravity="center"
+                android:text="OL"
+                android:textAlignment="center"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/ACDC"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:alpha="0.2"
+                android:background="#1976d2"
+                android:elevation="4dp"
+                android:gravity="center"
+                android:text="DC"
+                android:textAlignment="center"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/FreqDuty"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:alpha="0.2"
+                android:background="#2e7d32"
+                android:elevation="4dp"
+                android:gravity="center"
+                android:text="HZ"
+                android:textAlignment="center"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+
+        </LinearLayout>
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="4dp" />
 
         <TextView
-            android:id="@+id/Neg"
+            android:id="@+id/dataInfo"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="4dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:text="Min: 0,000 | Max: 0,000 | Avg: 0,000 | Dev: 0,000" />
+
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/graph"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/dataInfo"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:alpha="0.2"
-            android:background="@android:color/holo_orange_dark"
-            android:elevation="4dp"
-            android:gravity="center"
-            android:text="---"
-            android:textAlignment="center"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp" />
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/filename"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="10"
+                android:textAppearance="@style/TextContrast"
+                android:textColor="@null"
+                android:contentDescription="Log filename"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:text="logfile.csv" />
+
+            <Switch
+                android:id="@+id/switch1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:onClick="onSwitchClick"
+                android:text="Log"
+                tools:checked="false" />
+
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/OL"
+            android:id="@+id/fileInfo"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="4dp"
-            android:layout_weight="1.00"
-            android:alpha="0.2"
-            android:background="@android:color/holo_red_dark"
-            android:elevation="4dp"
-            android:gravity="center"
-            android:text="OL"
-            android:textAlignment="center"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/ACDC"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="4dp"
+            android:layout_height="38dp"
             android:layout_weight="1"
-            android:alpha="0.2"
-            android:background="#1976d2"
-            android:elevation="4dp"
-            android:gravity="center"
-            android:text="DC"
-            android:textAlignment="center"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp" />
+            android:text="Fileinfo (Path, Size)"
+            android:textSize="14sp" />
 
-        <TextView
-            android:id="@+id/FreqDuty"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="4dp"
-            android:layout_weight="1"
-            android:alpha="0.2"
-            android:background="#2e7d32"
-            android:elevation="4dp"
-            android:gravity="center"
-            android:text="HZ"
-            android:textAlignment="center"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp" />
-
-    </LinearLayout>
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="4dp" />
-
-    <TextView
-        android:id="@+id/dataInfo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:text="Min: 0,000 | Max: 0,000 | Avg: 0,000 | Dev: 0,000" />
-
-    <com.github.mikephil.charting.charts.BarChart
-        android:id="@+id/graph"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/dataInfo"
-        android:layout_weight="1" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="horizontal">
-
-        <EditText
-            android:id="@+id/filename"
+        <ProgressBar
+            android:id="@+id/logRunning"
+            style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="10"
-            android:textAppearance="@style/TextContrast"
-            android:textColor="@null"
-            android:contentDescription="Log filename"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:text="logfile.csv" />
-
-        <Switch
-            android:id="@+id/switch1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="false"
-            android:onClick="onSwitchClick"
-            android:text="Log"
-            tools:checked="false" />
+            android:layout_weight="1"
+            android:indeterminate="false" />
 
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/fileInfo"
-        android:layout_width="match_parent"
-        android:layout_height="38dp"
-        android:layout_weight="1"
-        android:text="Fileinfo (Path, Size)"
-        android:textSize="14sp" />
-
-    <ProgressBar
-        android:id="@+id/logRunning"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:indeterminate="false" />
-
-</LinearLayout>
+</layout>

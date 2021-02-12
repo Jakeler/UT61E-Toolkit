@@ -1,58 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <Button
-        android:id="@+id/startConnect"
+    <data>
+
+    </data>
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="2"
-        android:background="@color/blePrimary"
-        android:textColor="@color/bleTextPrimary"
-        android:drawableStart="@drawable/ic_bluetooth_searching_adj_64dp"
-        android:onClick="startScan"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:text="@string/start_ble_search"
-        android:textSize="18sp" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <Button
-        android:id="@+id/startLogView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="2"
-        android:background="@color/logPrimary"
-        android:textColor="@color/logTextPrimary"
-        android:drawableStart="@drawable/ic_folder_open_adj_64dp"
-        android:onClick="startView"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:text="@string/start_log_view"
-        android:textSize="18sp" />
+        <Button
+            android:id="@+id/startConnect"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:background="@color/blePrimary"
+            android:textColor="@color/bleTextPrimary"
+            android:drawableStart="@drawable/ic_bluetooth_searching_adj_64dp"
+            android:onClick="startScan"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:text="@string/start_ble_search"
+            android:textSize="18sp" />
 
-    <Button
-        android:id="@+id/startSettings"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:background="@color/settingsPrimary"
-        android:textColor="@color/settingsText"
-        android:drawableStart="@drawable/ic_settings_black_64dp"
-        android:onClick="startSettings"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:text="@string/start_setting"
-        android:textSize="18sp" />
+        <Button
+            android:id="@+id/startLogView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:background="@color/logPrimary"
+            android:textColor="@color/logTextPrimary"
+            android:drawableStart="@drawable/ic_folder_open_adj_64dp"
+            android:onClick="startView"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:text="@string/start_log_view"
+            android:textSize="18sp" />
 
-    <TextView
-        android:id="@+id/version"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="bottom|center_horizontal"
-        android:padding="10dp"
-        android:text="Version 1.0" />
+        <Button
+            android:id="@+id/startSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/settingsPrimary"
+            android:textColor="@color/settingsText"
+            android:drawableStart="@drawable/ic_settings_black_64dp"
+            android:onClick="startSettings"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:text="@string/start_setting"
+            android:textSize="18sp" />
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/version"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="bottom|center_horizontal"
+            android:padding="10dp"
+            android:text="Version 1.0" />
+
+    </LinearLayout>
+</layout>

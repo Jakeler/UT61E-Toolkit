@@ -14,7 +14,6 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.documentfile.provider.DocumentFile
 import com.jake.UT61e_decoder
-import kotlinx.android.synthetic.main.log_activity.*
 import java.io.IOException
 import java.io.OutputStreamWriter
 import java.util.*
@@ -28,10 +27,10 @@ class DataLogger(private val context: LogActivity) {
     lateinit var log_dir : String
     var reuseLogfile = true // true causes issues without appending...
 
-    private var filename: EditText = context.filename
-    private var fileInfo: TextView = context.fileInfo
-    private var logRunning: ProgressBar = context.logRunning
-    private val switch = context.switch1
+    private var filename: EditText = context.binding.filename
+    private var fileInfo: TextView = context.binding.fileInfo
+    private var logRunning: ProgressBar = context.binding.logRunning
+    private val switch = context.binding.switch1
     @JvmField var lineCount = 0
 
     init {

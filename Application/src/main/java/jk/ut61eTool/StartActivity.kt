@@ -3,17 +3,17 @@ package jk.ut61eTool
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.widget.TextView
-import kotlinx.android.synthetic.main.activity_start.*
+import androidx.databinding.DataBindingUtil
+import jk.ut61eTool.databinding.ActivityStartBinding
 
 class StartActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_start)
-        version.text = "Version: ${BuildConfig.VERSION_NAME}"
+        val binding: ActivityStartBinding =
+                DataBindingUtil.setContentView(this, R.layout.activity_start)
+        binding.version.text = "Version: ${BuildConfig.VERSION_NAME}"
     }
 
     fun startScan(v : View) {

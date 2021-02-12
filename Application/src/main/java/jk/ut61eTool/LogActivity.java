@@ -39,10 +39,14 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.databinding.DataBindingUtil;
 
 import com.jake.UT61e_decoder;
 
 import java.util.UUID;
+
+import jk.ut61eTool.databinding.LogActivityBinding;
+
 
 /**
  * For a given BLE device, this Activity provides the user interface to display data,
@@ -52,6 +56,8 @@ import java.util.UUID;
  */
 public class LogActivity extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener {
     private final static String TAG = LogActivity.class.getSimpleName();
+
+    public LogActivityBinding binding;
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
@@ -154,7 +160,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.log_activity);
+        binding = DataBindingUtil.setContentView(this, R.layout.log_activity);
         findViews();
 
         graphUI = new GraphUI(this, findViewById(R.id.graph), findViewById(R.id.dataInfo), R.color.blePrimary);
@@ -182,10 +188,8 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     }
 
     private void findViews() {
-        mConnectionState = findViewById(R.id.connection_state);
-        mDataField = findViewById(R.id.data_value);
-
-
+        mConnectionState = binding.connectionState;
+        mDataField = binding.dataValue;
     }
 
 

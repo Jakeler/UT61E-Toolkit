@@ -59,22 +59,22 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
     public LogActivityBinding binding;
 
-    public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
-    public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 
     private TextView mConnectionState, mDataField;
     private String mDeviceAddress;
     private BluetoothLeService mBluetoothLeService;
     private boolean mConnected = false;
-    private UUID uuid;
+    private boolean connection_wanted;
 
     NotificationManager mNotifyMgr;
-    private boolean connection_wanted;
 
     GraphUI graphUI;
     UI ui;
     Alarms alarm;
     DataLogger logger;
+
+    // Settings
+    private UUID uuid;
     private boolean ignore_ol, shunt_mode;
     private double shunt_value;
 
@@ -175,13 +175,13 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         loadSettings();
 
         final Intent intent = getIntent();
-        mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
+        mDeviceAddress = intent.getStringExtra(DeviceScanActivity.EXTRAS_DEVICE_ADDRESS);
         if (mDeviceAddress == null) {
             finish();
             Log.e("LogActivity", "no device address");
             startActivity(new Intent(this, StartActivity.class));
         }
-        getActionBar().setTitle(intent.getStringExtra(EXTRAS_DEVICE_NAME));
+        getActionBar().setTitle(intent.getStringExtra(DeviceScanActivity.EXTRAS_DEVICE_NAME));
         getActionBar().setDisplayHomeAsUpEnabled(true);
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);

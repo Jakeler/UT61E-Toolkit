@@ -50,6 +50,9 @@ class DeviceScanActivity : ListActivity() {
 
         // Stops scanning after time ins ms
         private const val SCAN_PERIOD: Long = 30_000
+
+        const val EXTRAS_DEVICE_NAME = "DEVICE_NAME"
+        const val EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS"
     }
 
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -149,8 +152,8 @@ class DeviceScanActivity : ListActivity() {
     override fun onListItemClick(l: ListView, v: View, position: Int, id: Long) {
         val device = mLeDeviceListAdapter?.getDevice(position) ?: return
         val intent = Intent(this, LogActivity::class.java)
-        intent.putExtra(LogActivity.EXTRAS_DEVICE_NAME, device.name)
-        intent.putExtra(LogActivity.EXTRAS_DEVICE_ADDRESS, device.address)
+        intent.putExtra(EXTRAS_DEVICE_NAME, device.name)
+        intent.putExtra(EXTRAS_DEVICE_ADDRESS, device.address)
         if (mScanning) {
             scanLeDevice(enable = false)
         }
@@ -249,7 +252,7 @@ class DeviceScanActivity : ListActivity() {
             viewHolder.deviceAddress.text = "MAC: ${item.device.address}"
             viewHolder.deviceRssi.text = "RSSI: ${item.rssi} dBm"
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                viewHolder.deviceBar.setProgress(127+item.rssi, true)
+                viewHolder.deviceBar.setProgress(127 + item.rssi, true)
             } else {
                 viewHolder.deviceBar.progress = 127+item.rssi
             }

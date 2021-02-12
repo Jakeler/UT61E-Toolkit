@@ -30,7 +30,7 @@ class FileSelectActivity : Activity() {
             return
         }
         val dir = DocumentFile.fromTreeUri(this, Uri.parse(uriEnc))
-        val files = dir?.listFiles()
+        val files = dir?.listFiles()?.filter {file -> file.isFile}
         if (files == null) {
             Log.w("FILE SELECT", "no files")
             Toast.makeText(this, getString(R.string.error_folder_missing), Toast.LENGTH_SHORT).show()

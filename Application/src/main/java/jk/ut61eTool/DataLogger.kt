@@ -15,17 +15,18 @@ import androidx.core.app.NotificationCompat
 import androidx.documentfile.provider.DocumentFile
 import com.jake.UT61e_decoder
 import kotlinx.android.synthetic.main.log_activity.*
-import java.io.FileWriter
 import java.io.IOException
+import java.io.OutputStreamWriter
 import java.util.*
 
 
 class DataLogger(private val context: LogActivity) {
     val CHANNEL_ID = "log"
 
-    private var fWriter: FileWriter? = null
+    private var fWriter: OutputStreamWriter? = null
     private lateinit var logFile: DocumentFile
     lateinit var log_dir : String
+    var reuseLogfile = true // true causes issues without appending...
 
     private var filename: EditText = context.filename
     private var fileInfo: TextView = context.fileInfo
@@ -70,21 +71,23 @@ class DataLogger(private val context: LogActivity) {
         try {
             val dirFile = DocumentFile.fromTreeUri(context, uri)
                     ?: throw IOException(context.getString(R.string.error_folder_inacc))
-            // Open file if it exists, create new otherwise
-            val dfile = dirFile.findFile(filename.text.toString())
-            if (dfile == null) {
-                logFile = dirFile.createFile("text/csv", filename.text.toString())
-                    ?: throw IOException(context.getString(R.string.error_folder_inacc))
-            } else {
-                logFile = dfile
-            }
-            val fd = context.contentResolver.openFileDescriptor(logFile.uri, "w")
+            // Open file if it exists, respect setting
+            val dfile = if (reuseLogfile) dirFile.findFile(filename.text.toString()) else null
+            logFile = dfile // Create new if not existing, throw exception if null
+                    ?: (dirFile.createFile("text/csv", filename.text.toString())
+                            ?: throw IOException(context.getString(R.string.error_folder_inacc)))
 
-            fWriter = FileWriter(fd?.fileDescriptor)
-            fWriter?.write("# " + Calendar.getInstance().time.toString() + "\n")
-            fWriter?.write(UT61e_decoder.csvHeader + "\n")
-            fWriter?.flush()
-            setRunning(true)
+            fWriter = context.contentResolver.openOutputStream(logFile.uri, "wa").let {
+                it?.writer()
+            }
+
+            fWriter?.run {
+                write("# " + Calendar.getInstance().time.toString() + "\n")
+                write(UT61e_decoder.csvHeader + "\n")
+                flush()
+
+                setRunning(true)
+            }
             lineCount = 0
         } catch (e: IOException) {
             handleErr(e)
@@ -94,7 +97,6 @@ class DataLogger(private val context: LogActivity) {
     fun stopLog() {
         if (fWriter == null) return
         try {
-            fWriter?.flush()
             fWriter?.close()
             fWriter = null
             setRunning(false)

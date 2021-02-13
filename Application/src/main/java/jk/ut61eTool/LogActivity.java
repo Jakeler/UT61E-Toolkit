@@ -314,19 +314,19 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
     private void loadSettings() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        graphUI.viewSize = Integer.valueOf(prefs.getString("viewport", "60"));
+        graphUI.viewSize = Integer.parseInt(prefs.getString("viewport", "60"));
         uuid = UUID.fromString(prefs.getString("uuid", ""));
         alarm.enabled = prefs.getBoolean("alarm_enabled", false);
         alarm.condition = prefs.getString("alarm_condition", "0");
-        alarm.samples = Integer.valueOf(prefs.getString("samples", "3"));
-        alarm.low_limit = Double.valueOf(prefs.getString("low_limit", "0"));
-        alarm.high_limit = Double.valueOf(prefs.getString("high_limit", "0"));
+        alarm.samples = Integer.parseInt(prefs.getString("samples", "3"));
+        alarm.low_limit = Double.parseDouble(prefs.getString("low_limit", "0"));
+        alarm.high_limit = Double.parseDouble(prefs.getString("high_limit", "0"));
         alarm.vibration = prefs.getBoolean("vibration", true);
         logger.log_dir = prefs.getString("log_folder", "");
         logger.setReuseLogfile(!prefs.getBoolean("no_logfile_reuse", false));
         ignore_ol = prefs.getBoolean("ignore_ol", false);
         shunt_mode = prefs.getBoolean("shunt_mode", false);
-        shunt_value = Double.valueOf(prefs.getString("shunt_ohm", "1.0"));
+        shunt_value = Double.parseDouble(prefs.getString("shunt_ohm", "1.0"));
     }
 
     @Override

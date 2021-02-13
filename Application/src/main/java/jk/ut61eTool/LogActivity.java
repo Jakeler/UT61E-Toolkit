@@ -36,7 +36,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Switch;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
@@ -59,8 +58,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
     public LogActivityBinding binding;
 
-
-    private TextView mConnectionState, mDataField;
     private String mDeviceAddress;
     private BluetoothLeService mBluetoothLeService;
     private boolean mConnected = false;
@@ -128,7 +125,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
                     mConnected = false;
                     updateConnectionState();
                     invalidateOptionsMenu();
-                    mDataField.setText(R.string.no_data);
+                    binding.dataValue.setText(R.string.no_data);
                     break;
                 case BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED:
                     boolean foundUUID = false;
@@ -161,9 +158,8 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
 
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.log_activity);
-        findViews();
 
-        graphUI = new GraphUI(this, findViewById(R.id.graph), findViewById(R.id.dataInfo), R.color.blePrimary);
+        graphUI = new GraphUI(this, binding.graph, binding.dataInfo, R.color.blePrimary);
         ui = new UI(this);
 
         mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -185,11 +181,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         getActionBar().setDisplayHomeAsUpEnabled(true);
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-    }
-
-    private void findViews() {
-        mConnectionState = binding.connectionState;
-        mDataField = binding.dataValue;
     }
 
 
@@ -292,11 +283,11 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     private void updateConnectionState() {
         runOnUiThread(() -> {
             if (mConnected && connection_wanted) {
-                mConnectionState.setText(R.string.connected);
+                binding.connectionState.setText(R.string.connected);
             } else if (!mConnected && !connection_wanted){
-                mConnectionState.setText(R.string.disconnected);
+                binding.connectionState.setText(R.string.disconnected);
             } else {
-                mConnectionState.setText(R.string.working);
+                binding.connectionState.setText(R.string.working);
             }
         });
     }

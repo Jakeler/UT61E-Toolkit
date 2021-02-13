@@ -27,6 +27,12 @@
             android:icon="@drawable/ic_folder_open_black_24dp"
             android:title="@string/pref_logdir"
             android:summary="@string/pref_logdir_desc"/>
+        <CheckBoxPreference
+            android:key="no_logfile_reuse"
+            android:title="@string/pref_reuse_log"
+            android:summary="@string/pref_reuse_log_desc"
+            android:defaultValue="false"
+            android:icon="@drawable/ic_outline_file_copy_24"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Data processing">

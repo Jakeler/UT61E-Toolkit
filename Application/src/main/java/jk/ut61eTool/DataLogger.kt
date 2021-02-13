@@ -25,13 +25,13 @@ class DataLogger(private val context: LogActivity) {
     private var fWriter: OutputStreamWriter? = null
     private lateinit var logFile: DocumentFile
     lateinit var log_dir : String
-    var reuseLogfile = true // true causes issues without appending...
+    var reuseLogfile = true
 
     private var filename: EditText = context.binding.filename
     private var fileInfo: TextView = context.binding.fileInfo
     private var logRunning: ProgressBar = context.binding.logRunning
     private val switch = context.binding.switch1
-    @JvmField var lineCount = 0
+    private var lineCount = 0
 
     init {
         // Create the NotificationChannel, but only on API 26+ because

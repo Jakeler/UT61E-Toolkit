@@ -93,6 +93,8 @@
 
     <string name="pref_logdir">Log folder: %s</string>
     <string name="pref_logdir_desc">Setup directory access for log files</string>
+    <string name="pref_reuse_log">Disable logfile reuse</string>
+    <string name="pref_reuse_log_desc">Create new file (with numbering) if the name already exists, instead of appending</string>
     <string name="logdir_digits">abcdefghijklmnopqrstuvwxyzABCDEFGIJKLMOPQRSTUVWQYZ _-0123456789</string>
 
     <string name="error_folder_not_setup">No folder setup, please select one in the settings first!</string>

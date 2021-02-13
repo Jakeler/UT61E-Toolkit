@@ -27,7 +27,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -37,7 +36,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Switch;
 
-import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
 
 import com.jake.UT61e_decoder;
@@ -324,14 +322,4 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
         loadSettings();
     }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            logger.startLog();
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
-
 }

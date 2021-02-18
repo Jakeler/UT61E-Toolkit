@@ -66,6 +66,7 @@ class DataLogger(private val context: LogActivity) {
         val uri = Uri.parse(log_dir)
         if (uri.scheme == null) {
             handleErr(context.getString(R.string.error_folder_not_setup))
+            return
         }
         try {
             val dirFile = DocumentFile.fromTreeUri(context, uri)
@@ -88,7 +89,7 @@ class DataLogger(private val context: LogActivity) {
                 setRunning(true)
             }
             lineCount = 0
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             handleErr(e)
         }
     }
@@ -100,7 +101,7 @@ class DataLogger(private val context: LogActivity) {
             fWriter = null
             setRunning(false)
             context.mNotifyMgr.cancel(42)
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             handleErr(e)
         }
     }

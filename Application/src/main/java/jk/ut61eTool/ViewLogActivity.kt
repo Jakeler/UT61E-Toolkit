@@ -7,10 +7,11 @@ import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Spinner
 import android.widget.Toast
+import androidx.databinding.DataBindingUtil
 import androidx.documentfile.provider.DocumentFile
 import com.jake.UT61e_decoder
+import jk.ut61eTool.databinding.ActivityViewLogBinding
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import java.util.*
@@ -20,9 +21,11 @@ class ViewLogActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_view_log)
 
-        val graphUI = GraphUI(this, findViewById(R.id.view_graph), findViewById(R.id.view_dataInfo), R.color.logPrimary)
+        val bndg: ActivityViewLogBinding =
+                DataBindingUtil.setContentView(this, R.layout.activity_view_log)
+
+        val graphUI = GraphUI(this, bndg.viewGraph, bndg.viewDataInfo, R.color.logPrimary)
         graphUI.viewSize = Int.MAX_VALUE
 
         val fileUri = intent.extras?.get("filename") as Uri
@@ -50,14 +53,13 @@ class ViewLogActivity : Activity() {
         }
 
 
-        val spinner = findViewById<Spinner>(R.id.log_spinner)
-        spinner.adapter = ArrayAdapter<String>(this, R.layout.spinneritem_time, R.id.time_textView, time_strings)
+        bndg.logSpinner.adapter = ArrayAdapter<String>(this, R.layout.spinneritem_time, R.id.time_textView, time_strings)
 
         fun loadGraph() {
             graphUI.graph.barData.removeDataSet(0)
             graphUI.newDataSet()
 
-            val start_pos = time_list[spinner.selectedItemPosition].recordNumber.toInt()
+            val start_pos = time_list[bndg.logSpinner.selectedItemPosition].recordNumber.toInt()
             for (pos in start_pos until record_list.size) {
                 val csvRecord = record_list[pos]
                 if (csvRecord.hasComment()) break
@@ -69,7 +71,7 @@ class ViewLogActivity : Activity() {
             graphUI.updateDataInfo()
         }
 
-        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        bndg.logSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 Log.d("SELECTED", time_list[position].comment)
                 loadGraph()

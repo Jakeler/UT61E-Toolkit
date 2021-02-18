@@ -30,7 +30,7 @@ class DataLogger(private val context: LogActivity) {
     private var filename: EditText = context.binding.filename
     private var fileInfo: TextView = context.binding.fileInfo
     private var logRunning: ProgressBar = context.binding.logRunning
-    private val switch = context.binding.switch1
+    private val switch = context.binding.logSwitch
     private var lineCount = 0
 
     init {

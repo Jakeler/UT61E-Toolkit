@@ -33,8 +33,6 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Switch;
 
 import androidx.databinding.DataBindingUtil;
 
@@ -158,11 +156,12 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         binding = DataBindingUtil.setContentView(this, R.layout.log_activity);
 
         graphUI = new GraphUI(this, binding.graph, binding.dataInfo, R.color.blePrimary);
-        ui = new UI(this);
+        ui = new UI(binding);
 
         mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         alarm = new Alarms(this);
         logger = new DataLogger(this);
+        ui.setLogger(logger);
 
         PreferenceManager.setDefaultValues(this, R.xml.prefs, false);
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
@@ -289,17 +288,6 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
             }
         });
     }
-
-    @SuppressWarnings("unused")
-    public void onSwitchClick(View v) {
-        Switch sw = (Switch) v;
-        if (sw.isChecked()) {
-            logger.startLog();
-        } else {
-            logger.stopLog();
-        }
-    }
-
 
     private void loadSettings() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);

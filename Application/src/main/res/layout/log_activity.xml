@@ -16,10 +16,6 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <data>
-
-    </data>
-
     <LinearLayout
         android:theme="@style/Theme.LogContent"
         android:layout_width="match_parent"
@@ -179,11 +175,10 @@
                 android:text="logfile.csv" />
 
             <Switch
-                android:id="@+id/switch1"
+                android:id="@+id/logSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="false"
-                android:onClick="onSwitchClick"
                 android:text="Log"
                 tools:checked="false" />
 

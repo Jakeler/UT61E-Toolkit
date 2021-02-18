@@ -5,6 +5,17 @@ import com.jake.UT61e_decoder
 import jk.ut61eTool.databinding.LogActivityBinding
 
 class UI(val binding: LogActivityBinding) {
+    var logger : DataLogger? = null
+
+    init {
+        binding.logSwitch.setOnCheckedChangeListener { _, checked ->
+            if (checked) {
+                logger?.startLog()
+            } else {
+                logger?.stopLog()
+            }
+        }
+    }
 
     fun update(ut61e: UT61e_decoder) {
         binding.dataValue.text = ut61e.toString()

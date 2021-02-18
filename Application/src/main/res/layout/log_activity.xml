@@ -167,19 +167,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="10"
-                android:textAppearance="@style/TextContrast"
-                android:textColor="@null"
                 android:contentDescription="Log filename"
                 android:ems="10"
                 android:inputType="textPersonName"
-                android:text="logfile.csv" />
+                android:text="logfile.csv"
+                android:textAppearance="@style/TextContrast"
+                android:textColor="@null" />
 
-            <Switch
+            <ToggleButton
                 android:id="@+id/logSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="false"
-                android:text="Log"
+                android:textOff="Log OFF"
+                android:textOn="Log ON"
                 tools:checked="false" />
 
         </LinearLayout>

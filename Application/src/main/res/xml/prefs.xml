@@ -42,6 +42,7 @@
             android:key="ignore_ol"
             android:title="@string/pref_ignore_ol"
             android:summary="@string/pref_ignore_ol_desc"/>
+
         <CheckBoxPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_power_input_black_24dp"
@@ -56,6 +57,44 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:title="@string/pref_shunt_ohm"/>
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_outline_thermostat_24"
+            android:key="tc_mode"
+            android:title="@string/pref_thermocouple_mode"
+            android:summary="@string/pref_thermocouple_desc" />
+        <EditTextPreference
+            android:defaultValue="0.039"
+            android:dependency="tc_mode"
+            android:inputType="numberDecimal"
+            android:key="tc_sens"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_thermocouple_coeff"/>
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_outline_thermostat_24"
+            android:key="tr_mode"
+            android:title="@string/pref_thermistor_mode"
+            android:summary="@string/pref_thermistor_desc" />
+        <EditTextPreference
+            android:defaultValue="100 000"
+            android:dependency="tr_mode"
+            android:inputType="number"
+            android:key="tr_ohm"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_thermistor_ohm"/>
+        <EditTextPreference
+            android:defaultValue="4092"
+            android:dependency="tr_mode"
+            android:inputType="number"
+            android:key="tr_beta"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_thermistor_beta"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Alarm">

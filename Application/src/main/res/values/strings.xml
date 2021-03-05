@@ -62,9 +62,19 @@
 
     <string name="pref_ignore_ol">Skip OL/UL</string>
     <string name="pref_ignore_ol_desc">Drop value if range is overloaded</string>
+
     <string name="pref_shunt_mode">Shunt mode</string>
     <string name="pref_shunt_mode_desc">Calculate current from external shunt resistor voltage drop</string>
-    <string name="pref_shunt_ohm">Resistance in Ohm</string>
+    <string name="pref_shunt_ohm">Resistance (Ω)</string>
+
+    <string name="pref_thermocouple_mode">Thermocouple mode</string>
+    <string name="pref_thermocouple_desc">Calculate temperature from voltage \n(type K …)</string>
+    <string name="pref_thermocouple_coeff">Seebeck coefficient (mV/K)</string>
+
+    <string name="pref_thermistor_mode">Thermistor mode</string>
+    <string name="pref_thermistor_desc">Calculate temperature from resistance \n(100k NTC …)</string>
+    <string name="pref_thermistor_ohm">Nominal resistance @ 25°C (Ω)</string>
+    <string name="pref_thermistor_beta">Beta factor @ 25°C (Ω/K)</string>
 
     <string name="pref_auto_connect">Auto reconnect</string>
     <string name="pref_auto_connect_desc">Try to reconnect after disconnection automatically</string>

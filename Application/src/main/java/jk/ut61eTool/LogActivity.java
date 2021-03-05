@@ -58,6 +58,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     private BluetoothLeService mBluetoothLeService;
     private boolean mConnected = false;
     private boolean connection_wanted;
+    private UUID uuid;
 
     NotificationManager mNotifyMgr;
 
@@ -65,11 +66,7 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
     UI ui;
     Alarms alarm;
     DataLogger logger;
-
-    // Settings
-    private UUID uuid;
-    private boolean ignore_ol, shunt_mode;
-    private double shunt_value;
+    Converter conv;
 
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -163,6 +160,8 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         logger = new DataLogger(this);
         ui.setLogger(logger);
 
+        conv = new Converter();
+
         PreferenceManager.setDefaultValues(this, R.xml.prefs, false);
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
         loadSettings();
@@ -254,19 +253,14 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         UT61e_decoder ut61e = new UT61e_decoder();
         if (ut61e.parse(data)) {
 
-            if (shunt_mode && shunt_value != 0.0 && ut61e.getMode() == ut61e.MODE_VOLTAGE) {
-                ut61e.value = ut61e.value/shunt_value; //I = U/R
-                if (ut61e.unit_str.equals("mV")) ut61e.value /= 1000.0;
-                ut61e.unit_str = "A (EXT. SHUNT)";
-            }
+            conv.adjust(ut61e);
 
             ui.update(ut61e);
 
             if (alarm.isAlarm(ut61e.getValue())) {
                 alarm.alarm(ut61e.toString());
             }
-            if (ignore_ol && (ut61e.isOL() || ut61e.isUL())) {
-                //Log.i("GRAPH/LOG", "Skipped ol/ul value");
+            if (conv.isIgnored(ut61e)) {
                 return;
             }
 
@@ -301,9 +295,9 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         alarm.vibration = prefs.getBoolean("vibration", true);
         logger.log_dir = prefs.getString("log_folder", "");
         logger.setReuseLogfile(!prefs.getBoolean("no_logfile_reuse", false));
-        ignore_ol = prefs.getBoolean("ignore_ol", false);
-        shunt_mode = prefs.getBoolean("shunt_mode", false);
-        shunt_value = Double.parseDouble(prefs.getString("shunt_ohm", "1.0"));
+        conv.ignore_ol = prefs.getBoolean("ignore_ol", false);
+        conv.shunt_mode = prefs.getBoolean("shunt_mode", false);
+        conv.shunt_value = Double.parseDouble(prefs.getString("shunt_ohm", "1.0"));
     }
 
     @Override

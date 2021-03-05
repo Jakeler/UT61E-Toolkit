@@ -80,7 +80,7 @@
             android:title="@string/pref_thermistor_mode"
             android:summary="@string/pref_thermistor_desc" />
         <EditTextPreference
-            android:defaultValue="100 000"
+            android:defaultValue="100000"
             android:dependency="tr_mode"
             android:inputType="number"
             android:key="tr_ohm"

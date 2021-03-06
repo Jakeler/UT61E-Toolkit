@@ -14,9 +14,12 @@ class StartActivity : Activity() {
         val binding: ActivityStartBinding =
                 DataBindingUtil.setContentView(this, R.layout.activity_start)
         binding.version.text = "Version: ${BuildConfig.VERSION_NAME}"
+
+        val t = getAllTemps(getSensorCount())
+        t.forEach { println(it) }
     }
 
-    fun startScan(v : View) {
+    fun startScan(v: View) {
         startActivity(Intent(this, DeviceScanActivity::class.java))
     }
 

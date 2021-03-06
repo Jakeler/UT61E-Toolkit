@@ -5,10 +5,12 @@ import java.io.InputStreamReader
 data class Temperature(
         val id: Int,
         val name: String,
-        val value: Double,
+        val celsius: Double,
 )
 
 object TemperatureReader {
+    const val basePath = "/sys/class/thermal/thermal_zone"
+
     private fun runShellForOutput(cmd: Array<String>): List<String> {
         var lines: List<String>
         Runtime.getRuntime().exec(cmd).let { process ->
@@ -20,7 +22,7 @@ object TemperatureReader {
     }
 
     fun getSensorCount(): Int {
-        val cmd = arrayOf("sh", "-c", "echo /sys/class/thermal/thermal_zone* | wc -w")
+        val cmd = arrayOf("sh", "-c", "echo $basePath* | wc -w")
         runShellForOutput(cmd).let {
             return it[0].trim().toInt()
         }
@@ -28,7 +30,7 @@ object TemperatureReader {
 
     fun getAllTemps(count: Int = getSensorCount()): List<Temperature> {
         val dirs = (0 until count).joinToString(separator = " "){ i ->
-            "/sys/class/thermal/thermal_zone$i"
+            "$basePath$i"
         }
         val cmd = arrayOf("sh", "-c", "for dir in $dirs; do echo $(cat \$dir/type) $(cat \$dir/temp); done ")
         runShellForOutput(cmd).let {
@@ -37,7 +39,7 @@ object TemperatureReader {
     }
 
     fun getTempByID(id: Int): Temperature {
-        val dir = "/sys/class/thermal/thermal_zone$id"
+        val dir = "$basePath$id"
         runShellForOutput(arrayOf("sh", "-c", "echo $(cat $dir/type) $(cat $dir/temp)")).let {
             return lineToTemp(id, it[0])
         }

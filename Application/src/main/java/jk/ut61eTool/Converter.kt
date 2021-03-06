@@ -1,6 +1,8 @@
 package jk.ut61eTool
 
 import com.jake.UT61e_decoder
+import kotlin.math.exp
+import kotlin.math.ln
 
 class Converter {
     @JvmField var ignore_ol = false
@@ -30,6 +32,10 @@ class Converter {
             ut61e.value /= tc_sens
             ut61e.unit_str = "°C (thermocouple)"
         }else if (tr_mode && ut61e.mode == ut61e.MODE_RESISTANCE) {
+            var ohm = ut61e.value
+            if (ut61e.unit_str.startsWith("k")) ohm *= 1e3
+            val k = tr_res * exp(- tr_beta / (273.15 + 25))
+            ut61e.value = tr_beta / ln(ohm / k) - 273.15
             ut61e.unit_str = "°C (thermistor)"
         }
     }

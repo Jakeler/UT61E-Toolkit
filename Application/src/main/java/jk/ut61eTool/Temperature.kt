@@ -35,6 +35,13 @@ fun getAllTemps(count: Int): List<Temperature> {
     }
 }
 
+fun getTempByID(id: Int): Temperature {
+    val dir = "/sys/class/thermal/thermal_zone$id"
+    runShellForOutput(arrayOf("sh", "-c", "echo $(cat $dir/type) $(cat $dir/temp)")).let {
+        return lineToTemp(id, it[0])
+    }
+}
+
 fun lineToTemp(index: Int, s: String): Temperature {
     val tokens = s.split(" ")
     val name = tokens[0]

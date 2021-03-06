@@ -17,6 +17,9 @@ class StartActivity : Activity() {
 
         val t = getAllTemps(getSensorCount())
         t.forEach { println(it) }
+        println(getTempByID(0))
+        println(getTempByID(42))
+        println(getTempByID(80))
     }
 
     fun startScan(v: View) {

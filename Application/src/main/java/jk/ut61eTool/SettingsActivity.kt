@@ -29,10 +29,16 @@ class SettingsActivity : AppCompatActivity() {
         private lateinit var prefs: SharedPreferences
 
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-//            super.onCreate(savedInstanceState)
             setPreferencesFromResource(R.xml.prefs, rootKey)
-            val preference = findPreference<Preference>("info")
-            preference?.summary = """
+            prefs = PreferenceManager.getDefaultSharedPreferences(activity)
+
+            setupUI()
+            refreshUI()
+        }
+
+        private fun setupUI() {
+            val infoPref = findPreference<Preference>("info")
+            infoPref?.summary = """
                 ${Date(BuildConfig.TIMESTAMP)}
                 Version: ${BuildConfig.VERSION_NAME} 
                 """.trimIndent()
@@ -52,17 +58,14 @@ class SettingsActivity : AppCompatActivity() {
             setNumberInputType("samples")
             setNumberInputType("low_limit", TYPE_NUMBER_FLAG_SIGNED or TYPE_NUMBER_FLAG_DECIMAL)
             setNumberInputType("high_limit", TYPE_NUMBER_FLAG_SIGNED or TYPE_NUMBER_FLAG_DECIMAL)
-
-            prefs = PreferenceManager.getDefaultSharedPreferences(activity)
-            refreshUI()
         }
 
-        fun setNumberInputType(key: String, flags: Int = 0) {
+        private fun setNumberInputType(key: String, flags: Int = 0) {
             findPreference<EditTextPreference>(key)
                     ?.setOnBindEditTextListener { it.inputType = TYPE_CLASS_NUMBER or flags}
         }
 
-        fun refreshUI() {
+        private fun refreshUI() {
             prefs.getString(DIR_PREF_KEY, "").let {
                 val uri = Uri.parse(it)
                 if (uri.scheme == null) {
@@ -86,6 +89,7 @@ class SettingsActivity : AppCompatActivity() {
                     }
                 }
             }
+
         }
 
         // Choose a directory using the system's file picker.
@@ -103,7 +107,7 @@ class SettingsActivity : AppCompatActivity() {
                 return
 
             val uri = data?.data ?: return
-            PreferenceManager.getDefaultSharedPreferences(activity).edit().apply {
+            prefs.edit().apply {
 //                putString(DIR_PREF_KEY, uri.toString())
                 putString(DIR_PREF_KEY, uri.toString())
                 commit()

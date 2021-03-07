@@ -14,8 +14,6 @@ class StartActivity : Activity() {
         val binding: ActivityStartBinding =
                 DataBindingUtil.setContentView(this, R.layout.activity_start)
         binding.version.text = "Version: ${BuildConfig.VERSION_NAME}"
-
-        TemperatureReader.getAllTemps().forEach { println(it) }
     }
 
     fun startScan(v: View) {

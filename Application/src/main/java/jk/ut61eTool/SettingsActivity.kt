@@ -9,6 +9,10 @@ import android.text.InputType.*
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 
 class SettingsActivity : AppCompatActivity() {
@@ -70,11 +74,17 @@ class SettingsActivity : AppCompatActivity() {
                 }
             }
 
-            val refTempPref = findPreference<ListPreference>("tc_reference")
-            // TODO: exception handling + run in thread/coroutine
-            TemperatureReader.getAllTemps().sortedBy { it.celsius }.forEach {
-                refTempPref?.entryValues = refTempPref?.entryValues?.plus(it.id.toString())
-                refTempPref?.entries = refTempPref?.entries?.plus("[Device] ${it.name}:\n    now = ${it.celsius}°C")
+            GlobalScope.launch(Dispatchers.IO) {
+                // long running shell command
+                val temps = TemperatureReader.getAllTemps().sortedBy { it.celsius }
+                withContext(Dispatchers.Main) {
+                    // TODO: exception handling?
+                    val refTempPref = findPreference<ListPreference>("tc_reference")
+                    temps.forEach {
+                        refTempPref?.entryValues = refTempPref?.entryValues?.plus(it.id.toString())
+                        refTempPref?.entries = refTempPref?.entries?.plus("[Device] ${it.name}:\n    now = ${it.celsius}°C")
+                    }
+                }
             }
         }
 

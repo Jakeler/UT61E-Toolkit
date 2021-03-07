@@ -70,6 +70,14 @@
     <string name="pref_thermocouple_mode">Thermocouple mode</string>
     <string name="pref_thermocouple_desc">Calculate temperature from voltage \n(type K …)</string>
     <string name="pref_thermocouple_coeff">Seebeck coefficient (mV/K)</string>
+    <string name="pref_thermocouple_ref">Reference temperature source</string>
+    <string-array name="pref_thermocouple_ref_entries">
+        <item>Constant value:\n    (configure below)</item>
+    </string-array>
+    <string-array name="pref_thermocouple_ref_vals">
+        <item>-1</item>
+    </string-array>
+    <string name="pref_thermocouple_ref_constant">Constant reference temperature</string>
 
     <string name="pref_thermistor_mode">Thermistor mode</string>
     <string name="pref_thermistor_desc">Calculate temperature from resistance \n(100k NTC …)</string>

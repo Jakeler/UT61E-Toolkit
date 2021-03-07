@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
@@ -54,6 +55,13 @@ class SettingsActivity : AppCompatActivity() {
                 } else {
                     dirPref?.title = getString(R.string.pref_logdir, uri.lastPathSegment)
                 }
+            }
+
+            val refTempPref = findPreference<ListPreference>("tc_reference")
+            // TODO: exception handling + run in thread/coroutine
+            TemperatureReader.getAllTemps().sortedBy { it.celsius }.forEach {
+                refTempPref?.entryValues = refTempPref?.entryValues?.plus(it.id.toString())
+                refTempPref?.entries = refTempPref?.entries?.plus("[Device] ${it.name}:\n    now = ${it.celsius}°C")
             }
         }
 

@@ -72,6 +72,20 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:title="@string/pref_thermocouple_coeff"/>
+        <ListPreference
+            android:defaultValue="-1"
+            android:dependency="tc_mode"
+            android:key="tc_reference"
+            android:entryValues="@array/pref_thermocouple_ref_vals"
+            android:entries="@array/pref_thermocouple_ref_entries"
+            android:title="@string/pref_thermocouple_ref"/>
+        <EditTextPreference
+            android:defaultValue="20.0"
+            android:dependency="tc_mode"
+            android:inputType="numberDecimal"
+            android:key="tc_ref_constant"
+            android:selectAllOnFocus="true"
+            android:title="@string/pref_thermocouple_ref_constant"/>
 
         <CheckBoxPreference
             android:defaultValue="false"

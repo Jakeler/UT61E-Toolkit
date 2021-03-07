@@ -77,12 +77,12 @@
     <string-array name="pref_thermocouple_ref_vals">
         <item>-1</item>
     </string-array>
-    <string name="pref_thermocouple_ref_constant">Constant reference temperature</string>
+    <string name="pref_thermocouple_ref_constant">Constant reference temperature (°C)</string>
 
     <string name="pref_thermistor_mode">Thermistor mode</string>
     <string name="pref_thermistor_desc">Calculate temperature from resistance \n(100k NTC …)</string>
     <string name="pref_thermistor_ohm">Nominal resistance @ 25°C (Ω)</string>
-    <string name="pref_thermistor_beta">Beta factor @ 25°C (Ω/K)</string>
+    <string name="pref_thermistor_beta">Beta factor @ 25°C (K)</string>
 
     <string name="pref_auto_connect">Auto reconnect</string>
     <string name="pref_auto_connect_desc">Try to reconnect after disconnection automatically</string>

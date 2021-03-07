@@ -5,12 +5,10 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.text.InputType.*
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.preference.ListPreference
-import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.PreferenceManager
+import androidx.preference.*
 import java.util.*
 
 class SettingsActivity : AppCompatActivity() {
@@ -41,8 +39,23 @@ class SettingsActivity : AppCompatActivity() {
                 true
             }
 
+            setNumberInputType("viewport")
+            setNumberInputType("shunt_ohm", TYPE_NUMBER_FLAG_DECIMAL)
+            setNumberInputType("tc_sens", TYPE_NUMBER_FLAG_DECIMAL)
+            setNumberInputType("tc_ref_constant", TYPE_NUMBER_FLAG_SIGNED or TYPE_NUMBER_FLAG_DECIMAL)
+            setNumberInputType("tr_ohm", TYPE_NUMBER_FLAG_DECIMAL)
+            setNumberInputType("tr_beta", TYPE_NUMBER_FLAG_DECIMAL)
+            setNumberInputType("samples")
+            setNumberInputType("low_limit", TYPE_NUMBER_FLAG_SIGNED or TYPE_NUMBER_FLAG_DECIMAL)
+            setNumberInputType("high_limit", TYPE_NUMBER_FLAG_SIGNED or TYPE_NUMBER_FLAG_DECIMAL)
+
             prefs = PreferenceManager.getDefaultSharedPreferences(activity)
             refreshUI()
+        }
+
+        fun setNumberInputType(key: String, flags: Int = 0) {
+            findPreference<EditTextPreference>(key)
+                    ?.setOnBindEditTextListener { it.inputType = TYPE_CLASS_NUMBER or flags}
         }
 
         fun refreshUI() {

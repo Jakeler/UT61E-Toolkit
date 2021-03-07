@@ -17,16 +17,17 @@ repositories {
 }
 
 dependencies {
+    implementation project(':ut61e_decoder_lib')
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.0'
     implementation 'androidx.preference:preference-ktx:1.1.1'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.legacy:legacy-support-v13:1.0.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'com.github.PhilJay:MPAndroidChart:v3.0.2'
     implementation 'androidx.vectordrawable:vectordrawable:1.1.0'
-    implementation project(':ut61e_decoder_lib')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.21"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.31"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.1'
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.0.2'
     implementation 'org.apache.commons:commons-csv:1.5'
 }
 

@@ -12,6 +12,8 @@ class Converter {
 
     @JvmField var tc_mode = false
     @JvmField var tc_sens = 0.0
+    @JvmField var tc_ref_id = -10
+    @JvmField var tc_ref_constant = 0.0
 
     @JvmField var tr_mode = false
     @JvmField var tr_res = 0.0
@@ -30,7 +32,13 @@ class Converter {
             ut61e.unit_str = "A (EXT. SHUNT)"
         } else if (tc_mode && tc_sens != 0.0 && ut61e.unit_str == "mV") {
             ut61e.value /= tc_sens
-            ut61e.unit_str = "°C (thermocouple)"
+            when(tc_ref_id) {
+                -1 -> Temperature(-1, "constant", tc_ref_constant)
+                else -> TemperatureReader.getTempByID(tc_ref_id)
+            }.let {
+                ut61e.value += it.celsius
+                ut61e.unit_str = "°C (thermocouple) \nref.: ${it.name} @ ${it.celsius}°C"
+            }
         }else if (tr_mode && ut61e.mode == ut61e.MODE_RESISTANCE) {
             var ohm = ut61e.value
             if (ut61e.unit_str.startsWith("k")) ohm *= 1e3

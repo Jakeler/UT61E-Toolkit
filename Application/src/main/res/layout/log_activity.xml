@@ -27,7 +27,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_margin="4dp"
             android:orientation="horizontal">
 
             <TextView
@@ -48,7 +48,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_margin="4dp"
             android:orientation="horizontal">
 
             <TextView
@@ -63,6 +63,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
+                android:lines="2"
                 android:text="@string/no_data"
                 android:textColor="@android:color/black"
                 android:textSize="18sp"

@@ -1,5 +1,6 @@
 package jk.ut61eTool
 
+import android.util.Log
 import java.io.InputStreamReader
 
 data class Temperature(
@@ -18,6 +19,7 @@ object TemperatureReader {
             lines = InputStreamReader(process.inputStream).use { it.readLines() }
             process.destroy()
         }
+        Log.d("TemperatureReader", "runShellForOutput: ${lines.joinToString(";")}")
         return lines
     }
 
@@ -47,6 +49,9 @@ object TemperatureReader {
 
     private fun lineToTemp(index: Int, s: String): Temperature {
         val tokens = s.split(" ")
+        if (tokens.size < 2) {
+            return Temperature(index, "NOT FOUND", Double.NaN)
+        }
         val name = tokens[0]
         val value = tokens[1].toDouble()
         return Temperature(index, name, when {

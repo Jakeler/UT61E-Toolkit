@@ -65,11 +65,11 @@
 
     <string name="pref_shunt_mode">Shunt mode</string>
     <string name="pref_shunt_mode_desc">Calculate current from external shunt resistor voltage drop</string>
-    <string name="pref_shunt_ohm">Resistance (Ω)</string>
+    <string name="pref_shunt_ohm">Resistance [Ω]</string>
 
     <string name="pref_thermocouple_mode">Thermocouple mode</string>
     <string name="pref_thermocouple_desc">Calculate temperature from voltage \n(type K …)</string>
-    <string name="pref_thermocouple_coeff">Seebeck coefficient (mV/K)</string>
+    <string name="pref_thermocouple_coeff">Seebeck coefficient [mV/K]</string>
     <string name="pref_thermocouple_ref">Reference temperature source</string>
     <string-array name="pref_thermocouple_ref_entries">
         <item>Constant value:\n    (configure below)</item>
@@ -77,12 +77,17 @@
     <string-array name="pref_thermocouple_ref_vals">
         <item>-1</item>
     </string-array>
-    <string name="pref_thermocouple_ref_constant">Constant reference temperature (°C)</string>
+    <string name="pref_thermocouple_ref_constant">Constant reference temperature [°C]</string>
 
     <string name="pref_thermistor_mode">Thermistor mode</string>
     <string name="pref_thermistor_desc">Calculate temperature from resistance \n(100k NTC …)</string>
-    <string name="pref_thermistor_ohm">Nominal resistance @ 25°C (Ω)</string>
-    <string name="pref_thermistor_beta">Beta factor @ 25°C (K)</string>
+    <string name="pref_thermistor_ohm">Nominal resistance [Ω] @ 25°C</string>
+    <string name="pref_thermistor_beta">Beta factor [K] @ 25°C</string>
+
+    <string name="pref_rtd_mode">RTD mode</string>
+    <string name="pref_rtd_desc">Calculate from resistance temperature detectors (PT100, PT500, PT1000 …)</string>
+    <string name="pref_rtd_ohm">Nominal resistance [Ω] @ 0°C</string>
+    <string name="pref_rtd_alpha">Alpha factor [Ω/(Ω·K)]</string>
 
     <string name="pref_auto_connect">Auto reconnect</string>
     <string name="pref_auto_connect_desc">Try to reconnect after disconnection automatically</string>

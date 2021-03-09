@@ -109,6 +109,29 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:title="@string/pref_thermistor_beta"/>
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_outline_thermostat_24"
+            android:key="rtd_mode"
+            android:title="@string/pref_rtd_mode"
+            android:summary="@string/pref_rtd_desc" />
+        <EditTextPreference
+            android:defaultValue="1000"
+            android:dependency="rtd_mode"
+            android:inputType="number"
+            android:key="rtd_ohm"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_rtd_ohm"/>
+        <EditTextPreference
+            android:defaultValue="0.003850"
+            android:dependency="rtd_mode"
+            android:inputType="number"
+            android:key="rtd_alpha"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_rtd_alpha"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Alarm">

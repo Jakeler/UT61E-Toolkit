@@ -55,6 +55,8 @@ class SettingsActivity : AppCompatActivity() {
             setNumberInputType("tc_ref_constant", TYPE_NUMBER_FLAG_SIGNED or TYPE_NUMBER_FLAG_DECIMAL)
             setNumberInputType("tr_ohm", TYPE_NUMBER_FLAG_DECIMAL)
             setNumberInputType("tr_beta", TYPE_NUMBER_FLAG_DECIMAL)
+            setNumberInputType("rtd_ohm", TYPE_NUMBER_FLAG_DECIMAL)
+            setNumberInputType("rtd_alpha", TYPE_NUMBER_FLAG_DECIMAL)
             setNumberInputType("samples")
             setNumberInputType("low_limit", TYPE_NUMBER_FLAG_SIGNED or TYPE_NUMBER_FLAG_DECIMAL)
             setNumberInputType("high_limit", TYPE_NUMBER_FLAG_SIGNED or TYPE_NUMBER_FLAG_DECIMAL)

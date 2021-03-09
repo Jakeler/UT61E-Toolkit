@@ -305,6 +305,9 @@ public class LogActivity extends Activity implements SharedPreferences.OnSharedP
         conv.tr_mode = prefs.getBoolean("tr_mode", false);
         conv.tr_res = Double.parseDouble(prefs.getString("tr_ohm", "100000"));
         conv.tr_beta = Double.parseDouble(prefs.getString("tr_beta", "4092"));
+        conv.rtd_mode = prefs.getBoolean("rtd_mode", false);
+        conv.rtd_res = Double.parseDouble(prefs.getString("rtd_ohm", "1000"));
+        conv.rtd_alpha = Double.parseDouble(prefs.getString("rtd_alpha", "0.00385"));
     }
 
     @Override

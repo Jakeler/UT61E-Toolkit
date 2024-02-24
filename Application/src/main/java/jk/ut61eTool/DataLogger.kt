@@ -16,7 +16,7 @@ import androidx.documentfile.provider.DocumentFile
 import com.jake.UT61e_decoder
 import java.io.IOException
 import java.io.OutputStreamWriter
-import java.util.*
+import java.util.Calendar
 
 
 class DataLogger(private val context: LogActivity) {
@@ -55,7 +55,8 @@ class DataLogger(private val context: LogActivity) {
         resultIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         resultIntent.action = "android.intent.action.MAIN"
         resultIntent.addCategory("android.intent.category.LAUNCHER")
-        val resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         mBuilder.setContentIntent(resultPendingIntent)
         context.mNotifyMgr.notify(42, mBuilder.build())
     }

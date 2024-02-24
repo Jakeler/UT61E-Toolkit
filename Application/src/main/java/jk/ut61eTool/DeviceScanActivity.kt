@@ -31,7 +31,11 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.BaseAdapter
+import android.widget.ListView
+import android.widget.ProgressBar
+import android.widget.TextView
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
@@ -46,7 +50,7 @@ class DeviceScanActivity : ListActivity() {
 
     companion object {
         private const val REQUEST_ENABLE_BT = 1
-        private const val LOCATION_PERMISSION = 7
+        private const val BLE_PERMISSION = 7
 
         // Stops scanning after time ins ms
         private const val SCAN_PERIOD: Long = 30_000
@@ -82,11 +86,17 @@ class DeviceScanActivity : ListActivity() {
             }
         }
 
-        // Check for coarse location permission to allow BLE scanning
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        checkRequestBluetoothPermission()
+    }
+
+    private fun checkRequestBluetoothPermission() {
+        // Check for scan permission to allow BLE scanning
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-            ), LOCATION_PERMISSION)
+                // TODO request old ones level 30 and below
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ), BLE_PERMISSION)
         }
     }
 
@@ -123,8 +133,8 @@ class DeviceScanActivity : ListActivity() {
         mLeDeviceListAdapter = LeDeviceListAdapter()
         listAdapter = mLeDeviceListAdapter
 
-        // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
-        // fire an intent to display a dialog asking the user to grant permission to enable it.
+        // Ensures Bluetooth is enabled on the device. Needs connect permission
+        checkRequestBluetoothPermission()
         if (!mBluetoothAdapter.isEnabled) {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
@@ -150,6 +160,7 @@ class DeviceScanActivity : ListActivity() {
     }
 
     override fun onListItemClick(l: ListView, v: View, position: Int, id: Long) {
+        checkRequestBluetoothPermission()
         val device = mLeDeviceListAdapter?.getDevice(position) ?: return
         val intent = Intent(this, LogActivity::class.java)
         intent.putExtra(EXTRAS_DEVICE_NAME, device.name)
@@ -161,6 +172,7 @@ class DeviceScanActivity : ListActivity() {
     }
 
     private fun scanLeDevice(enable: Boolean) {
+        checkRequestBluetoothPermission()
         if (enable) {
             // Stops scanning after a pre-defined scan period.
             mHandler?.postDelayed({
@@ -282,10 +294,12 @@ class DeviceScanActivity : ListActivity() {
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+        Log.i("perm", "onRequestPermissionsResult: $requestCode $grantResults")
+        if (grantResults.any {it == PackageManager.PERMISSION_DENIED}) {
             Toast.makeText(this, R.string.location_permission_exp, Toast.LENGTH_LONG).show()
             finish()
         }
+
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 }

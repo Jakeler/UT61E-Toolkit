@@ -9,10 +9,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
@@ -31,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import jk.ut61eTool.R
+import jk.ut61eTool.ui.components.FullscreenChart
 import jk.ut61eTool.ui.components.MeasurementChart
 import jk.ut61eTool.ui.components.StatsRow
 
@@ -54,6 +58,25 @@ fun ViewerScreen(
     viewModel: ViewerViewModel = viewModel(factory = ViewerViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    var fullscreen by rememberSaveable { mutableStateOf(false) }
+    val onFullscreen = { fullscreen = true }
+    if (fullscreen && uiState.values.isNotEmpty()) {
+        FullscreenChart(
+            values = uiState.values,
+            unit = uiState.activeUnit,
+            onClose = { fullscreen = false },
+            modifier = modifier,
+            title = stringResource(
+                R.string.viewer_summary,
+                uiState.pointCount,
+                uiState.activeUnit,
+            ),
+            // Recorded logs carry no timestamps, so the x axis stays in samples.
+            stats = uiState.stats,
+        )
+        return
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -93,6 +116,7 @@ fun ViewerScreen(
                     uiState = uiState,
                     onSelectSession = viewModel::selectSession,
                     onSelectUnit = viewModel::selectUnit,
+                    onFullscreen = onFullscreen,
                 )
             }
         }
@@ -104,6 +128,7 @@ private fun ViewerContent(
     uiState: ViewerUiState,
     onSelectSession: (Int) -> Unit,
     onSelectUnit: (String) -> Unit,
+    onFullscreen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -126,17 +151,47 @@ private fun ViewerContent(
             )
         }
 
-        ElevatedCard(Modifier.fillMaxWidth()) {
+        // The graph takes whatever the pickers leave over, as in the live view.
+        ElevatedCard(
+            Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .heightIn(min = MIN_GRAPH_HEIGHT),
+        ) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .padding(vertical = 12.dp, horizontal = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(
+                            R.string.viewer_summary,
+                            uiState.pointCount,
+                            uiState.activeUnit,
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    IconButton(onClick = onFullscreen) {
+                        Icon(
+                            imageVector = Icons.Default.Fullscreen,
+                            contentDescription = stringResource(R.string.graph_fullscreen),
+                        )
+                    }
+                }
                 MeasurementChart(
                     values = uiState.values,
                     unit = uiState.activeUnit,
-                    height = 260.dp,
+                    height = null,
+                    modifier = Modifier.weight(1f),
                 )
                 StatsRow(
                     stats = uiState.stats,
@@ -145,16 +200,6 @@ private fun ViewerContent(
                 )
             }
         }
-
-        Text(
-            text = stringResource(
-                R.string.viewer_summary,
-                uiState.pointCount,
-                uiState.activeUnit,
-            ),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 
@@ -222,3 +267,5 @@ private fun SessionPicker(
         }
     }
 }
+
+private val MIN_GRAPH_HEIGHT = 180.dp

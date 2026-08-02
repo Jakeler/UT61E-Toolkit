@@ -4,7 +4,7 @@
 
     <!-- Notifications -->
     <string name="ble_channel_connection">Meter connection</string>
-    <string name="ble_channel_alarm">Measurement alarm</string>
+    <string name="ble_channel_alarm">Alarms and lost connection</string>
     <string name="ble_notification_title">UT61E meter</string>
     <string name="ble_state_connecting">Connecting…</string>
     <string name="ble_state_connected">Connected</string>
@@ -14,6 +14,11 @@
     <string name="ble_alarm_title">Alarm triggered</string>
     <!-- %1$s: the measured value including its unit -->
     <string name="ble_alarm_text">Limit exceeded: %1$s</string>
+    <string name="ble_link_lost_title">Meter connection lost</string>
+    <string name="ble_link_lost_retrying">Trying to reconnect…</string>
+    <string name="ble_link_lost_gave_up">Could not reconnect. Check that the meter is on and in range.</string>
+    <!-- %1$s: what happened to the link, %2$d: number of logged data points -->
+    <string name="ble_link_lost_logging">%1$s Logging is paused at %2$d data points.</string>
 
     <!-- Scan screen -->
     <string name="scan_start">Scan</string>

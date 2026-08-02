@@ -75,6 +75,7 @@ class MeterService : LifecycleService() {
     private var connectionState = ConnectionState.DISCONNECTED
     private var alarmActive = false
     private var foregroundStarted = false
+    private var linkLostNotified = false
     private var lastNotificationUpdate = 0L
 
     override fun onCreate() {
@@ -135,6 +136,7 @@ class MeterService : LifecycleService() {
         assembler.reset()
         alarmEvaluator.reset()
         alarmActive = false
+        clearLinkLostNotification()
         repository.clearSession()
         publishState(ConnectionState.CONNECTING)
 
@@ -167,17 +169,67 @@ class MeterService : LifecycleService() {
                 .collect { event ->
                     // Any traffic means the meter is there; a later drop starts its
                     // own backoff instead of inheriting an old one.
-                    if (event is MeterConnectionEvent.Data) failures = 0
+                    if (event is MeterConnectionEvent.Data) {
+                        failures = 0
+                        clearLinkLostNotification()
+                    }
                     handleEvent(event)
                 }
 
             // The flow only completes once the link is gone, one way or another.
             if (++failures > MAX_RECONNECT_ATTEMPTS) break
             publishState(ConnectionState.CONNECTING)
+            if (failures >= LINK_LOST_WARNING_ATTEMPTS) notifyLinkLost(retrying = true)
             delay(reconnectDelayMs(failures))
         }
 
+        notifyLinkLost(retrying = false)
         onDisconnected()
+    }
+
+    /**
+     * Says out loud that the meter is gone.
+     *
+     * Silent reconnection is right for the range switch it was built for, but a meter
+     * that stays away is a measurement the user is no longer taking — and they may
+     * well have left it logging and walked off. This is the same high-importance
+     * channel as the measurement alarm, so it reaches a pocketed phone.
+     */
+    private fun notifyLinkLost(retrying: Boolean) {
+        if (retrying && linkLostNotified) return
+        linkLostNotified = true
+
+        val what = getString(
+            if (retrying) R.string.ble_link_lost_retrying else R.string.ble_link_lost_gave_up,
+        )
+        val logging = csvLogger.state.value
+        val text = if (logging.running) {
+            getString(R.string.ble_link_lost_logging, what, logging.lineCount)
+        } else {
+            what
+        }
+
+        val notification = NotificationCompat.Builder(this, CHANNEL_ALARM)
+            .setSmallIcon(R.drawable.ic_meter_notification)
+            .setContentTitle(getString(R.string.ble_link_lost_title))
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setContentIntent(contentIntent())
+            .setOngoing(retrying)
+            .setAutoCancel(!retrying)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .build()
+        notificationManager?.notify(LINK_LOST_NOTIFICATION_ID, notification)
+
+        // Only on the way in: a phone buzzing again when the retries run out would
+        // say nothing the first buzz did not.
+        if (retrying && settings.vibration) vibrate()
+    }
+
+    private fun clearLinkLostNotification() {
+        if (!linkLostNotified) return
+        linkLostNotified = false
+        notificationManager?.cancel(LINK_LOST_NOTIFICATION_ID)
     }
 
     private suspend fun handleEvent(event: MeterConnectionEvent) {
@@ -194,6 +246,7 @@ class MeterService : LifecycleService() {
     /** Explicit user disconnect: the service has nothing left to do. */
     private fun stopConnection() {
         connectionJob?.cancel()
+        clearLinkLostNotification()
         connectionJob = null
         publishState(ConnectionState.DISCONNECTED)
         stopSelf()
@@ -397,6 +450,7 @@ class MeterService : LifecycleService() {
 
         private const val NOTIFICATION_ID = 42
         private const val ALARM_NOTIFICATION_ID = 43
+        private const val LINK_LOST_NOTIFICATION_ID = 44
         private const val NOTIFICATION_THROTTLE_MS = 1_000L
 
 
@@ -446,6 +500,13 @@ class MeterServiceCommander(context: Context) : MeterCommander {
  * link has dropped ten times".
  */
 internal const val MAX_RECONNECT_ATTEMPTS = 10
+
+/**
+ * Consecutive failed attempts before the user is told the meter is gone. Low enough
+ * to reach them while it could still be nudged back, high enough that the range
+ * switch this all exists for never raises it.
+ */
+internal const val LINK_LOST_WARNING_ATTEMPTS = 4
 
 /**
  * Backoff before the [failures]-th consecutive retry: fast enough that a range switch

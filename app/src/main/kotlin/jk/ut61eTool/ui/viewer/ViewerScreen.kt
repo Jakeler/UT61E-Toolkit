@@ -17,7 +17,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
@@ -43,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import jk.ut61eTool.R
+import jk.ut61eTool.ui.components.AppCard
 import jk.ut61eTool.ui.components.FullscreenChart
 import jk.ut61eTool.ui.components.MeasurementChart
 import jk.ut61eTool.ui.components.StatsRow
@@ -152,7 +152,7 @@ private fun ViewerContent(
         }
 
         // The graph takes whatever the pickers leave over, as in the live view.
-        ElevatedCard(
+        AppCard(
             Modifier
                 .fillMaxWidth()
                 .weight(1f)

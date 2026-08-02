@@ -33,9 +33,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BluetoothDisabled
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material3.Button
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -67,9 +65,11 @@ import jk.ut61eTool.R
 import jk.ut61eTool.data.ConnectionState
 import jk.ut61eTool.data.LoggingState
 import jk.ut61eTool.domain.windowStats
+import jk.ut61eTool.ui.components.AppCard
 import jk.ut61eTool.ui.components.FullscreenChart
 import jk.ut61eTool.ui.components.MeasurementChart
 import jk.ut61eTool.ui.components.StatsRow
+import jk.ut61eTool.ui.components.appCardColors
 import jk.ut61eTool.ui.components.formatMeasurement
 import jk.ut61eTool.ui.components.ValueDisplay
 import jk.ut61eTool.ui.components.previewReading
@@ -231,7 +231,7 @@ private fun ReadoutCard(uiState: LiveUiState) {
         targetValue = if (uiState.alarmActive) {
             MaterialTheme.colorScheme.errorContainer
         } else {
-            MaterialTheme.colorScheme.surfaceContainerLow
+            MaterialTheme.colorScheme.surfaceContainer
         },
         label = "readoutContainer",
     )
@@ -241,12 +241,9 @@ private fun ReadoutCard(uiState: LiveUiState) {
         MaterialTheme.colorScheme.onSurface
     }
 
-    ElevatedCard(
+    AppCard(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = container,
-            contentColor = content,
-        ),
+        colors = appCardColors(containerColor = container, contentColor = content),
     ) {
         Box(
             modifier = Modifier
@@ -286,7 +283,7 @@ private fun GraphCard(
     onFullscreen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ElevatedCard(modifier.fillMaxWidth()) {
+    AppCard(modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -383,7 +380,7 @@ private fun LoggingCard(
     var expanded by remember { mutableStateOf(false) }
     val logging = uiState.logging
 
-    ElevatedCard(Modifier.fillMaxWidth()) {
+    AppCard(Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()

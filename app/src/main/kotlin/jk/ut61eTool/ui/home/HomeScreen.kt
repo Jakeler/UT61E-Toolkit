@@ -20,9 +20,6 @@ import androidx.compose.material.icons.automirrored.filled.BluetoothSearching
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timeline
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -41,6 +38,8 @@ import jk.ut61eTool.BuildConfig
 import jk.ut61eTool.R
 import jk.ut61eTool.appContainer
 import jk.ut61eTool.data.ConnectionState
+import jk.ut61eTool.ui.components.AppCard
+import jk.ut61eTool.ui.components.appCardColors
 import jk.ut61eTool.ui.theme.UT61eToolkitTheme
 
 /**
@@ -128,7 +127,7 @@ private fun HomeCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ElevatedCard(
+    AppCard(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
     ) {
@@ -171,10 +170,10 @@ private fun SessionCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(
+    AppCard(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
+        colors = appCardColors(
             containerColor = MaterialTheme.colorScheme.tertiaryContainer,
             contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
         ),

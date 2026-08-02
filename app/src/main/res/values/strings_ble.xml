@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strings owned by the BLE / service / scan workstream. -->
+<resources>
+
+    <!-- Notifications -->
+    <string name="ble_channel_connection">Meter connection</string>
+    <string name="ble_channel_alarm">Measurement alarm</string>
+    <string name="ble_notification_title">UT61E meter</string>
+    <string name="ble_state_connecting">Connecting…</string>
+    <string name="ble_state_connected">Connected</string>
+    <string name="ble_state_disconnected">Disconnected</string>
+    <!-- %1$s: connection state, %2$d: number of logged data points -->
+    <string name="ble_notification_logging">%1$s · logging, %2$d data points</string>
+    <string name="ble_alarm_title">Alarm triggered</string>
+    <!-- %1$s: the measured value including its unit -->
+    <string name="ble_alarm_text">Limit exceeded: %1$s</string>
+
+    <!-- Scan screen -->
+    <string name="scan_scanning">Scanning for Bluetooth LE devices…</string>
+    <string name="scan_start">Scan</string>
+    <string name="scan_stop">Stop</string>
+    <string name="scan_empty">No devices found yet. Make sure the serial adapter is powered.</string>
+    <string name="scan_empty_done">No devices found. Tap Scan to try again.</string>
+    <string name="scan_unknown_device">Unknown device</string>
+    <!-- %1$s: MAC address -->
+    <string name="scan_device_address">MAC: %1$s</string>
+    <!-- %1$d: signal strength in dBm -->
+    <string name="scan_device_rssi">RSSI: %1$d dBm</string>
+
+    <!-- Permissions / adapter state -->
+    <string name="scan_permission_rationale">Scanning for the meter needs the Bluetooth permission. Location is never derived from the scan results.</string>
+    <string name="scan_permission_rationale_legacy">On this Android version, scanning for Bluetooth LE devices requires the location permission. The app never uses your location.</string>
+    <string name="scan_permission_grant">Grant permission</string>
+    <string name="scan_permission_denied">Permission was denied. If the dialog no longer appears, grant it in the system app settings.</string>
+    <string name="scan_bluetooth_off">Bluetooth is switched off.</string>
+    <string name="scan_bluetooth_enable">Turn on Bluetooth</string>
+    <string name="scan_bluetooth_unsupported">This device has no Bluetooth LE adapter.</string>
+    <!-- %1$s: error message from the Bluetooth stack -->
+    <string name="scan_error">Scan failed: %1$s</string>
+
+</resources>

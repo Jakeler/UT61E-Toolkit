@@ -73,6 +73,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import jk.ut61eTool.R
 import jk.ut61eTool.data.ConnectionState
 import jk.ut61eTool.data.LoggingState
+import jk.ut61eTool.domain.windowStats
 import jk.ut61eTool.ui.components.ChartLegend
 import jk.ut61eTool.ui.components.MeasurementChart
 import jk.ut61eTool.ui.components.StatsRow
@@ -585,6 +586,8 @@ private val MIN_GRAPH_HEIGHT = 180.dp
 private val ConnectedColor = Color(0xFF2E7D32)
 private val ConnectingColor = Color(0xFFF9A825)
 
+private val PREVIEW_VALUES = listOf(4.90, 4.93, 4.95, 4.91, 4.88, 4.94, 4.92, 4.90, 4.93, 4.96)
+
 @Preview(showBackground = true)
 @Composable
 private fun LiveScreenPreview() {
@@ -595,8 +598,9 @@ private fun LiveScreenPreview() {
                 deviceName = "UT61E-BLE",
                 deviceAddress = "00:11:22:33:44:55",
                 reading = previewReading(),
-                windowValues = listOf(4.90, 4.93, 4.95, 4.91, 4.88, 4.94),
+                windowValues = PREVIEW_VALUES,
                 unit = "V",
+                stats = PREVIEW_VALUES.windowStats(),
                 sampleRateHz = 2.0,
                 logging = LoggingState(running = true, fileName = "logfile.csv", lineCount = 42),
             ),

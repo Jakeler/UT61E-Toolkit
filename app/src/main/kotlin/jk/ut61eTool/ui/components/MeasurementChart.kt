@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -193,7 +194,10 @@ fun MeasurementChart(
                     ),
                     animationSpec = null,
                     animateIn = false,
-                    modifier = Modifier.fillMaxWidth(),
+                    // fillMaxSize, not just width: otherwise the host keeps its
+                    // intrinsic height and floats in the middle of the space it was
+                    // given.
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
         }

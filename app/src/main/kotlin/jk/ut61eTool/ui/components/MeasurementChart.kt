@@ -75,6 +75,11 @@ import kotlin.math.roundToInt
  * is known, and by sample index otherwise (recorded logs carry no timing). The
  * viewport follows the newest sample without diff animations; pinch zooms the time
  * axis. Pressing a point reveals value and unit.
+ *
+ * With a [capacity] the x axis spans the full window from the first sample on and
+ * the trace grows in from the right, the way a chart recorder fills. Without it the
+ * axis would stretch on every sample until the window was full, dragging all the
+ * labels with it.
  */
 @Composable
 fun MeasurementChart(
@@ -86,13 +91,17 @@ fun MeasurementChart(
     height: Dp? = 220.dp,
     /** When set, min / max / average are drawn as guide lines. */
     guides: WindowStats? = null,
+    /** Samples the window holds when full; null spans just the data given. */
+    capacity: Int? = null,
 ) {
+    val span = capacity?.coerceAtLeast(values.size) ?: values.size
     val modelProducer = remember { CartesianChartModelProducer() }
 
-    LaunchedEffect(values) {
+    LaunchedEffect(values, span) {
         if (values.isEmpty()) return@LaunchedEffect
         modelProducer.runTransaction {
-            lineSeries { series(values) }
+            // Right-aligned inside the span, so the newest sample is always at its end.
+            lineSeries { series(x = (span - values.size until span).toList(), y = values) }
         }
     }
 
@@ -155,8 +164,13 @@ fun MeasurementChart(
                                     pointProvider = pointProvider,
                                 ),
                             ),
-                            rangeProvider = remember(range) {
-                                CartesianLayerRangeProvider.fixed(minY = range.min, maxY = range.max)
+                            rangeProvider = remember(range, span) {
+                                CartesianLayerRangeProvider.fixed(
+                                    minX = 0.0,
+                                    maxX = (span - 1).coerceAtLeast(0).toDouble(),
+                                    minY = range.min,
+                                    maxY = range.max,
+                                )
                             },
                         ),
                         startAxis = VerticalAxis.rememberStart(
@@ -166,17 +180,17 @@ fun MeasurementChart(
                             itemPlacer = remember { VerticalAxis.ItemPlacer.count({ AXIS_LABEL_COUNT }) },
                         ),
                         bottomAxis = HorizontalAxis.rememberBottom(
-                            valueFormatter = remember(sampleRateHz, values.size) {
-                                TimeAxisFormatter(sampleRateHz, values.lastIndex)
+                            valueFormatter = remember(sampleRateHz, span) {
+                                TimeAxisFormatter(sampleRateHz, span - 1)
                             },
                             // Label every whole second: at the default spacing several
                             // labels fall inside one second and read as duplicates.
-                            itemPlacer = remember(sampleRateHz, values.size) {
+                            itemPlacer = remember(sampleRateHz, span) {
                                 HorizontalAxis.ItemPlacer.aligned(
-                                    spacing = { labelSpacing(sampleRateHz, values.size) },
+                                    spacing = { labelSpacing(sampleRateHz, span) },
                                     // Anchor a label on the newest sample, so the axis
                                     // reads 0s, -6s, -12s rather than half seconds.
-                                    offset = { labelOffset(sampleRateHz, values.size) },
+                                    offset = { labelOffset(sampleRateHz, span) },
                                 )
                             },
                         ),

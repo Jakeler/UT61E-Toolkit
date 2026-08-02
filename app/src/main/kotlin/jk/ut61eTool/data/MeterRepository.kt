@@ -50,6 +50,13 @@ class MeterRepository {
     private val _window = MutableStateFlow<List<DisplayReading>>(emptyList())
     val window: StateFlow<List<DisplayReading>> = _window.asStateFlow()
 
+    /**
+     * How many readings [window] holds once it is full. The chart pins its time axis
+     * to this, so the axis does not stretch while the window is still filling.
+     */
+    private val _windowCapacity = MutableStateFlow(0)
+    val windowCapacity: StateFlow<Int> = _windowCapacity.asStateFlow()
+
     private val _loggingState = MutableStateFlow(LoggingState())
     val loggingState: StateFlow<LoggingState> = _loggingState.asStateFlow()
 
@@ -82,6 +89,7 @@ class MeterRepository {
     fun publishReading(reading: DisplayReading, windowSize: Int, includeInWindow: Boolean = true) {
         _latestReading.value = reading
         _lastSampleNanos.value = System.nanoTime()
+        _windowCapacity.value = windowSize.coerceAtLeast(1)
         if (includeInWindow) {
             _window.value = (_window.value + reading).takeLast(windowSize.coerceAtLeast(1))
         }

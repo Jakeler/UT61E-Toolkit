@@ -38,6 +38,8 @@ data class LiveUiState(
     val deviceName: String? = null,
     val reading: DisplayReading? = null,
     val windowValues: List<Double> = emptyList(),
+    /** Samples the window holds when full; the chart's time axis spans this. */
+    val windowCapacity: Int = 0,
     val unit: String = "",
     val stats: WindowStats? = null,
     val logging: LoggingState = LoggingState(),
@@ -84,9 +86,12 @@ private data class MeterSnapshot(
     val connectionState: ConnectionState,
     val device: DeviceInfo?,
     val reading: DisplayReading?,
-    val window: List<DisplayReading>,
+    val window: Window,
     val alarmActive: Boolean,
 )
+
+/** The rolling window together with the size it grows to. */
+private data class Window(val readings: List<DisplayReading>, val capacity: Int)
 
 /**
  * Drives the live view. Mirrors the legacy LogActivity: it owns the connection
@@ -118,11 +123,13 @@ class LiveViewModel(
         .runningFold(null as Double?, ::settleRate)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    private val window = combine(repository.window, repository.windowCapacity, ::Window)
+
     private val meterSnapshot = combine(
         repository.connectionState,
         repository.device,
         repository.latestReading,
-        repository.window,
+        window,
         repository.alarmActive,
     ) { state, device, reading, window, alarm ->
         MeterSnapshot(state, device, reading, window, alarm)
@@ -135,17 +142,18 @@ class LiveViewModel(
         sampleRateHz,
         holdSnapshot,
     ) { meter, logging, editedName, rate, held ->
-        val window = held ?: meter.window
-        val unit = meter.reading?.unit ?: window.lastOrNull()?.unit.orEmpty()
+        val readings = held ?: meter.window.readings
+        val unit = meter.reading?.unit ?: readings.lastOrNull()?.unit.orEmpty()
         // A mode change mid-session leaves old-unit samples in the window;
         // graphing them against the current unit's scale is meaningless.
-        val values = window.filter { it.unit == unit }.map { it.value }
+        val values = readings.filter { it.unit == unit }.map { it.value }
         LiveUiState(
             connectionState = meter.connectionState,
             deviceAddress = meter.device?.address ?: address,
             deviceName = meter.device?.name ?: deviceName,
             reading = meter.reading,
             windowValues = values,
+            windowCapacity = meter.window.capacity,
             unit = unit,
             stats = values.windowStats(),
             logging = logging,

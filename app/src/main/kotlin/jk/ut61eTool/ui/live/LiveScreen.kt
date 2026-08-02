@@ -333,6 +333,7 @@ private fun GraphCard(
                 // A held graph is a still image; its x axis is no longer "seconds ago".
                 sampleRateHz = uiState.sampleRateHz.takeUnless { uiState.held },
                 height = null,
+                capacity = uiState.windowCapacity,
                 modifier = Modifier.weight(1f),
             )
             StatsRow(
@@ -411,6 +412,7 @@ private fun FullscreenGraph(
                 sampleRateHz = uiState.sampleRateHz.takeUnless { uiState.held },
                 height = null,
                 guides = uiState.stats,
+                capacity = uiState.windowCapacity,
                 modifier = Modifier.weight(1f),
             )
             uiState.stats?.let { ChartLegend(stats = it, unit = uiState.unit) }
@@ -599,6 +601,7 @@ private fun LiveScreenPreview() {
                 deviceAddress = "00:11:22:33:44:55",
                 reading = previewReading(),
                 windowValues = PREVIEW_VALUES,
+                windowCapacity = 30,
                 unit = "V",
                 stats = PREVIEW_VALUES.windowStats(),
                 sampleRateHz = 2.0,

@@ -153,11 +153,6 @@ private fun DeviceList(
     Column(modifier = Modifier.fillMaxSize()) {
         if (scanning) {
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-            Text(
-                text = stringResource(R.string.scan_scanning),
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            )
         }
         if (error != null) {
             Text(

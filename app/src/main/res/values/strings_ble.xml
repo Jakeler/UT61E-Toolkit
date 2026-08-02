@@ -16,7 +16,6 @@
     <string name="ble_alarm_text">Limit exceeded: %1$s</string>
 
     <!-- Scan screen -->
-    <string name="scan_scanning">Scanning for Bluetooth LE devices…</string>
     <string name="scan_start">Scan</string>
     <string name="scan_stop">Stop</string>
     <string name="scan_empty">No devices found yet. Make sure the serial adapter is powered.</string>

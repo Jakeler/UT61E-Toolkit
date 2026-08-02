@@ -87,10 +87,10 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
             } else {
                 current + incoming
             }
-            // Stable ordering: named devices first, alphabetically, then by MAC —
-            // sorting by RSSI would make rows jump on every advertisement.
+            // Strongest signal first; 5 dB buckets keep rows from jumping on
+            // every advertisement, the MAC breaks ties stably.
             merged.sortedWith(
-                compareBy({ it.name == null }, { it.name.orEmpty().lowercase() }, { it.address }),
+                compareByDescending<ScannedDevice> { it.rssi / 5 }.thenBy { it.address },
             )
         }
     }

@@ -10,6 +10,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -20,11 +22,14 @@ import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.CartesianDrawingContext
 import com.patrykandpatrick.vico.compose.cartesian.Scroll
 import com.patrykandpatrick.vico.compose.cartesian.Zoom
+import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.compose.cartesian.data.lineSeries
+import com.patrykandpatrick.vico.compose.cartesian.layer.LineCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarker
 import com.patrykandpatrick.vico.compose.cartesian.marker.ColumnCartesianLayerMarkerTarget
@@ -34,6 +39,7 @@ import com.patrykandpatrick.vico.compose.cartesian.marker.rememberDefaultCartesi
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
+import com.patrykandpatrick.vico.compose.common.Fill
 import com.patrykandpatrick.vico.compose.common.ProvideVicoTheme
 import com.patrykandpatrick.vico.compose.common.component.TextComponent
 import com.patrykandpatrick.vico.compose.m3.common.rememberM3VicoTheme
@@ -43,21 +49,24 @@ import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.log10
+import kotlin.math.roundToInt
 
 /**
  * Line chart of a measurement series.
  *
- * The x axis is the plain sample index. The y axis is fitted to the data
- * (with headroom) instead of being zero-anchored, so small signals stay
- * readable, and its labels use just enough decimals for the visible range.
- * The viewport follows the newest sample without diff animations; pinch
- * zooms the time axis. Pressing a point reveals value and unit.
+ * The y axis is fitted to the data (with headroom) instead of being zero-anchored,
+ * so small signals stay readable, and its labels use just enough decimals for the
+ * visible range. The x axis is labelled in seconds before now when [sampleRateHz]
+ * is known, and by sample index otherwise (recorded logs carry no timing). The
+ * viewport follows the newest sample without diff animations; pinch zooms the time
+ * axis. Pressing a point reveals value and unit.
  */
 @Composable
 fun MeasurementChart(
     values: List<Double>,
     modifier: Modifier = Modifier,
     unit: String? = null,
+    sampleRateHz: Double? = null,
     height: Dp = 220.dp,
 ) {
     val modelProducer = remember { CartesianChartModelProducer() }
@@ -88,10 +97,29 @@ fun MeasurementChart(
             val markerFormatter = remember(unit) { MeasurementValueFormatter(unit.orEmpty()) }
             val range = remember(values) { yRange(values) }
 
+            val lineColor = MaterialTheme.colorScheme.primary
+            val areaFill = remember(lineColor) {
+                LineCartesianLayer.AreaFill.single(
+                    Fill(
+                        Brush.verticalGradient(
+                            listOf(lineColor.copy(alpha = 0.35f), Color.Transparent),
+                        ),
+                    ),
+                )
+            }
+
             ProvideVicoTheme(rememberM3VicoTheme()) {
                 CartesianChartHost(
                     chart = rememberCartesianChart(
                         rememberLineCartesianLayer(
+                            lineProvider = LineCartesianLayer.LineProvider.series(
+                                LineCartesianLayer.rememberLine(
+                                    fill = remember(lineColor) {
+                                        LineCartesianLayer.LineFill.single(Fill(lineColor))
+                                    },
+                                    areaFill = areaFill,
+                                ),
+                            ),
                             rangeProvider = remember(range) {
                                 CartesianLayerRangeProvider.fixed(minY = range.min, maxY = range.max)
                             },
@@ -101,6 +129,11 @@ fun MeasurementChart(
                             // The default step placer labels only "round" values, which can
                             // collapse to a single line on a fitted (non-zero-based) range.
                             itemPlacer = remember { VerticalAxis.ItemPlacer.count({ AXIS_LABEL_COUNT }) },
+                        ),
+                        bottomAxis = HorizontalAxis.rememberBottom(
+                            valueFormatter = remember(sampleRateHz, values.size) {
+                                TimeAxisFormatter(sampleRateHz, values.lastIndex)
+                            },
                         ),
                         marker = rememberDefaultCartesianMarker(
                             label = markerLabel(labelStyle),
@@ -143,6 +176,25 @@ private fun yRange(values: List<Double>): YRange {
 }
 
 private const val AXIS_LABEL_COUNT = 5
+
+/**
+ * Labels the x axis in seconds before the newest sample when the sample rate is
+ * known; recorded logs have no timing, so they fall back to the sample index.
+ */
+private class TimeAxisFormatter(
+    private val sampleRateHz: Double?,
+    private val lastIndex: Int,
+) : CartesianValueFormatter {
+    override fun format(
+        context: com.patrykandpatrick.vico.compose.cartesian.CartesianMeasuringContext,
+        value: Double,
+        verticalAxisPosition: com.patrykandpatrick.vico.compose.cartesian.axis.Axis.Position.Vertical?,
+    ): CharSequence {
+        if (sampleRateHz == null || sampleRateHz <= 0.0) return value.roundToInt().toString()
+        val seconds = (value - lastIndex) / sampleRateHz
+        return if (seconds >= -0.5) "now" else "${seconds.roundToInt()}s"
+    }
+}
 
 /** Axis labels with just enough decimals to tell adjacent gridlines apart. */
 private class AdaptiveAxisFormatter(range: YRange) : CartesianValueFormatter {

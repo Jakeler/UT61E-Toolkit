@@ -70,6 +70,7 @@ import jk.ut61eTool.ui.components.FullscreenChart
 import jk.ut61eTool.ui.components.MeasurementChart
 import jk.ut61eTool.ui.components.StatsRow
 import jk.ut61eTool.ui.components.appCardColors
+import jk.ut61eTool.ui.components.appCardContainer
 import jk.ut61eTool.ui.components.formatMeasurement
 import jk.ut61eTool.ui.components.ValueDisplay
 import jk.ut61eTool.ui.components.previewReading
@@ -231,7 +232,7 @@ private fun ReadoutCard(uiState: LiveUiState) {
         targetValue = if (uiState.alarmActive) {
             MaterialTheme.colorScheme.errorContainer
         } else {
-            MaterialTheme.colorScheme.surfaceContainer
+            appCardContainer()
         },
         label = "readoutContainer",
     )

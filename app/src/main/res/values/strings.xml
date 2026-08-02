@@ -30,7 +30,6 @@
 
     <!-- Live -->
     <string name="live_alarm_active">Alarm: the configured limit condition is met</string>
-    <string name="live_waiting">Waiting for data…</string>
     <string name="live_logging_title">Data logging</string>
     <string name="live_logging_filename">File name</string>
     <string name="live_logging_start">Start logging</string>
@@ -38,15 +37,13 @@
     <string name="live_logging_info">%1$s • %2$.2f KB • %3$d data points</string>
     <string name="live_samples">%1$d samples</string>
 
-    <!-- Measurement badges -->
+    <!-- Measurement display -->
     <string name="badge_ac">AC</string>
     <string name="badge_dc">DC</string>
     <string name="badge_auto">AUTO</string>
-    <string name="badge_hz">Hz</string>
-    <string name="badge_duty">Duty</string>
-    <string name="badge_ol">OL</string>
-    <string name="badge_ul">UL</string>
-    <string name="badge_low_battery">BATT</string>
+    <string name="badge_low_battery">Low battery</string>
+    <string name="value_overload">O.L</string>
+    <string name="value_underload">U.L</string>
 
     <!-- Stats -->
     <string name="stats_min">Min</string>

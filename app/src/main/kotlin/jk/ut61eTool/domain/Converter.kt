@@ -34,6 +34,7 @@ class Converter(private val coldJunction: ColdJunctionProvider) {
                     unit = "A (ext. shunt)",
                     detail = "shunt: ${settings.shuntOhm} Ω",
                     source = reading,
+                    decimals = SHUNT_DECIMALS,
                 )
             }
 
@@ -48,6 +49,7 @@ class Converter(private val coldJunction: ColdJunctionProvider) {
                     unit = "°C (thermocouple)",
                     detail = "ref.: ${reference.name} @ ${reference.celsius}°C",
                     source = reading,
+                    decimals = TEMPERATURE_DECIMALS,
                 )
             }
 
@@ -60,6 +62,7 @@ class Converter(private val coldJunction: ColdJunctionProvider) {
                     unit = "°C (thermistor)",
                     detail = "R25: ${settings.trOhm} Ω, β: ${settings.trBeta}",
                     source = reading,
+                    decimals = TEMPERATURE_DECIMALS,
                 )
             }
 
@@ -70,6 +73,7 @@ class Converter(private val coldJunction: ColdJunctionProvider) {
                     unit = "°C (RTD)",
                     detail = "R0: ${settings.rtdOhm} Ω, α: ${settings.rtdAlpha}",
                     source = reading,
+                    decimals = TEMPERATURE_DECIMALS,
                 )
             }
 
@@ -83,5 +87,11 @@ class Converter(private val coldJunction: ColdJunctionProvider) {
         unitStr.startsWith("k") -> 1e3
         unitStr.startsWith("M") -> 1e6
         else -> 1e0
+    }
+
+    private companion object {
+        /** Converted values leave the meter's range behind, so they set their own resolution. */
+        const val SHUNT_DECIMALS = 3
+        const val TEMPERATURE_DECIMALS = 1
     }
 }

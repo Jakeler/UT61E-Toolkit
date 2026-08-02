@@ -1,13 +1,23 @@
 package jk.ut61eTool.ui.components
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BatteryAlert
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,8 +35,17 @@ import jk.ut61eTool.ui.theme.MeasurementValueStyle
 import jk.ut61eTool.ui.theme.UT61eToolkitTheme
 
 /**
- * The big live readout: value + unit, the meter's status flags as badges, and
- * an optional detail line (e.g. the thermocouple cold-junction reference).
+ * The big live readout, laid out as a single value line the way the meter's own
+ * display reads:
+ *
+ * ```
+ * AUTO   −4.9312 V DC
+ * ```
+ *
+ * The range flags lead, the current type is part of the unit, and the number sits
+ * right-aligned in a slot wide enough for the widest string its range can produce —
+ * so digits stay put while the value fluctuates and only a range change resizes it.
+ * `Hz`/`%` are not flagged separately: they are already the unit.
  */
 @Composable
 fun ValueDisplay(
@@ -36,41 +55,19 @@ fun ValueDisplay(
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        if (reading == null) {
-            Text(
-                text = stringResource(R.string.live_waiting),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            return@Column
-        }
+        ValueLine(reading)
 
-        Row(
-            verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
+        val notes = listOfNotNull(
+            // The parenthetical of a converted unit ("°C (thermocouple)") is context,
+            // not part of the reading — it belongs on the secondary line.
+            reading?.unit?.substringAfter(' ', "")?.takeIf { it.isNotBlank() },
+            reading?.detail?.takeIf { it.isNotBlank() },
+        )
+        if (notes.isNotEmpty()) {
             Text(
-                text = formatMeasurement(reading.value),
-                style = MeasurementValueStyle,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-            )
-            Text(
-                text = reading.unit,
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 6.dp),
-            )
-        }
-
-        ReadingBadges(reading)
-
-        val detail = reading.detail
-        if (!detail.isNullOrBlank()) {
-            Text(
-                text = detail,
+                text = notes.joinToString(" · "),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -80,82 +77,222 @@ fun ValueDisplay(
 }
 
 @Composable
-private fun ReadingBadges(reading: DisplayReading) {
-    val source = reading.source
-    FlowRow(
+private fun ValueLine(reading: DisplayReading?) {
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.Bottom,
     ) {
-        if (source.isAC) Badge(stringResource(R.string.badge_ac))
-        if (source.isDC) Badge(stringResource(R.string.badge_dc))
-        if (source.isAuto) Badge(stringResource(R.string.badge_auto))
-        if (source.mode == Mode.FREQUENCY) Badge(stringResource(R.string.badge_hz))
-        if (source.mode == Mode.DUTY) Badge(stringResource(R.string.badge_duty))
-        if (source.isOverload) Badge(stringResource(R.string.badge_ol), emphasis = true)
-        if (source.isUnderload) Badge(stringResource(R.string.badge_ul), emphasis = true)
-        if (source.isLowBattery) Badge(stringResource(R.string.badge_low_battery), emphasis = true)
+        // Reserved, so appearing flags never nudge the number sideways.
+        Box(
+            modifier = Modifier
+                .width(FLAG_SLOT_WIDTH)
+                .padding(end = 8.dp, bottom = 8.dp),
+            contentAlignment = Alignment.BottomEnd,
+        ) {
+            if (reading != null) LeadingFlags(reading.source)
+        }
+
+        NumberSlot(reading)
+
+        Spacer(Modifier.width(8.dp))
+
+        UnitGroup(reading)
     }
 }
 
+/** `AUTO` plus the low-battery warning: meter state, not part of the value. */
 @Composable
-private fun Badge(
-    text: String,
-    modifier: Modifier = Modifier,
-    emphasis: Boolean = false,
-) {
-    val container: Color
-    val content: Color
-    if (emphasis) {
-        container = MaterialTheme.colorScheme.errorContainer
-        content = MaterialTheme.colorScheme.onErrorContainer
-    } else {
-        container = MaterialTheme.colorScheme.secondaryContainer
-        content = MaterialTheme.colorScheme.onSecondaryContainer
+private fun LeadingFlags(source: Ut61eReading) {
+    Column(
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        if (source.isLowBattery) {
+            Icon(
+                imageVector = Icons.Default.BatteryAlert,
+                contentDescription = stringResource(R.string.badge_low_battery),
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(16.dp),
+            )
+        }
+        if (source.isAuto) {
+            Text(
+                text = stringResource(R.string.badge_auto),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/**
+ * The number, right-aligned over an invisible template of the widest string this
+ * range can produce. Monospace digits plus a fixed slot mean the readout only moves
+ * when the meter actually changes range.
+ */
+@Composable
+private fun NumberSlot(reading: DisplayReading?) {
+    val overloaded = reading != null && (reading.source.isOverload || reading.source.isUnderload)
+    val text = when {
+        reading == null -> PLACEHOLDER_TEXT
+        reading.source.isOverload -> stringResource(R.string.value_overload)
+        reading.source.isUnderload -> stringResource(R.string.value_underload)
+        else -> formatMeasurement(reading.value, decimals = reading.decimals)
     }
 
-    Surface(
-        modifier = modifier,
-        color = container,
-        contentColor = content,
-        shape = MaterialTheme.shapes.small,
-    ) {
+    Box(contentAlignment = Alignment.BottomEnd) {
+        Text(
+            text = widthTemplate(reading),
+            style = MeasurementValueStyle,
+            color = Color.Transparent,
+            maxLines = 1,
+        )
         Text(
             text = text,
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+            style = MeasurementValueStyle,
+            color = when {
+                overloaded -> MaterialTheme.colorScheme.error
+                reading == null -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = waitingAlpha())
+                else -> MaterialTheme.colorScheme.onSurface
+            },
+            maxLines = 1,
         )
     }
+}
+
+/** Slow pulse of the waiting placeholder, so an idle link is visibly idle, not frozen. */
+@Composable
+private fun waitingAlpha(): Float = rememberInfiniteTransition(label = "waiting")
+    .animateFloat(
+        initialValue = 0.15f,
+        targetValue = 0.4f,
+        animationSpec = infiniteRepeatable(tween(1200), RepeatMode.Reverse),
+        label = "waitingAlpha",
+    ).value
+
+/** The unit and, as part of it, the current type: `V DC`. */
+@Composable
+private fun UnitGroup(reading: DisplayReading?) {
+    Row(
+        modifier = Modifier.padding(bottom = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.Bottom,
+    ) {
+        Text(
+            text = reading?.unit?.substringBefore(' ').orEmpty(),
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.primary,
+            maxLines = 1,
+        )
+        // "°C DC" would be nonsense: after a conversion the current type describes the
+        // meter's input, not what is being shown.
+        val current = reading?.takeUnless { it.isConverted }?.source?.let {
+            when {
+                it.isAC -> stringResource(R.string.badge_ac)
+                it.isDC -> stringResource(R.string.badge_dc)
+                else -> null
+            }
+        }
+        if (current != null) {
+            Text(
+                text = current,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+            )
+        }
+    }
+}
+
+private val FLAG_SLOT_WIDTH = 52.dp
+
+/** Shown before the first sample arrives, so the card does not resize on connect. */
+private const val PLACEHOLDER_TEXT = "––––"
+
+/** The meter shows five digits; converted values may need more on the left. */
+private const val METER_DIGITS = 5
+
+private fun widthTemplate(reading: DisplayReading?): String {
+    if (reading == null) return PLACEHOLDER_TEXT
+    val decimals = reading.decimals
+    val formatted = formatMeasurement(reading.value, decimals = decimals)
+    val integerDigits = maxOf(
+        METER_DIGITS - decimals,
+        formatted.substringBefore('.').trimStart('-').length,
+    )
+    val fraction = if (decimals > 0) "." + "8".repeat(decimals) else ""
+    return "-" + "8".repeat(integerDigits) + fraction
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun ValueDisplayPreview() {
     UT61eToolkitTheme(dynamicColor = false) {
-        ValueDisplay(reading = previewReading())
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            ValueDisplay(reading = previewReading())
+            ValueDisplay(reading = previewReading(value = -4.9312))
+            ValueDisplay(
+                reading = previewReading(
+                    value = 225.80,
+                    unit = "mV",
+                    decimals = 2,
+                    isAC = true,
+                    isDC = false,
+                    isLowBattery = true,
+                ),
+            )
+            ValueDisplay(reading = previewReading(isOverload = true))
+            ValueDisplay(
+                reading = previewReading(
+                    value = 1234.5,
+                    unit = "Hz",
+                    decimals = 1,
+                    mode = Mode.FREQUENCY,
+                    isDC = false,
+                ),
+            )
+            ValueDisplay(
+                reading = previewReading(
+                    value = 24.3,
+                    unit = "°C (thermocouple)",
+                    decimals = 1,
+                    detail = "ref.: cpu @ 21.5°C",
+                ),
+            )
+            ValueDisplay(reading = null)
+        }
     }
 }
 
 internal fun previewReading(
     value: Double = 4.9312,
     unit: String = "V",
+    decimals: Int = 4,
     detail: String? = null,
+    mode: Mode = Mode.VOLTAGE,
+    isAC: Boolean = false,
+    isDC: Boolean = true,
+    isOverload: Boolean = false,
+    isLowBattery: Boolean = false,
 ): DisplayReading = DisplayReading(
     value = value,
     unit = unit,
     detail = detail,
+    decimals = decimals,
     source = Ut61eReading(
         value = value,
-        unit = unit,
-        mode = Mode.VOLTAGE,
+        unit = unit.substringBefore(' '),
+        mode = mode,
         rangeIndex = 0,
-        isAC = false,
-        isDC = true,
+        decimals = decimals,
+        isAC = isAC,
+        isDC = isDC,
         isAuto = true,
-        isNegative = false,
-        isOverload = false,
+        isNegative = value < 0,
+        isOverload = isOverload,
         isUnderload = false,
-        isLowBattery = false,
+        isLowBattery = isLowBattery,
         raw = ByteArray(0),
     ),
 )

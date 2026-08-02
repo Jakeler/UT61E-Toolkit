@@ -12,6 +12,11 @@ data class DisplayReading(
     val unit: String,
     val detail: String? = null,
     val source: Ut61eReading,
+    /**
+     * Decimal places to display. Unconverted readings keep the meter's own range
+     * resolution; conversions move the value onto a different scale and pick their own.
+     */
+    val decimals: Int = source.decimals,
 ) {
     val isConverted: Boolean get() = unit != source.unit
 

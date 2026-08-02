@@ -182,14 +182,22 @@ private class MeasurementValueFormatter(private val unit: String) :
 }
 
 /**
- * Formats a measurement for display: four decimals like the legacy CSV format,
- * but with trailing zeros dropped so that the readout stays compact.
+ * Formats a measurement for display.
+ *
+ * With [decimals] the value is padded to exactly that many places — the digit count
+ * then only changes when the meter changes range, so the big readout stays still.
+ * Without it, four decimals are formatted and trailing zeros dropped, which keeps
+ * derived numbers (statistics, chart markers, the log viewer) compact.
  */
-fun formatMeasurement(value: Double, unit: String = ""): String {
-    val text = "%.4f".format(Locale.US, value)
-        .trimEnd('0')
-        .trimEnd('.')
-        .ifEmpty { "0" }
+fun formatMeasurement(value: Double, unit: String = "", decimals: Int? = null): String {
+    val text = if (decimals != null) {
+        "%.${decimals}f".format(Locale.US, value)
+    } else {
+        "%.4f".format(Locale.US, value)
+            .trimEnd('0')
+            .trimEnd('.')
+            .ifEmpty { "0" }
+    }
     return if (unit.isBlank()) text else "$text $unit"
 }
 

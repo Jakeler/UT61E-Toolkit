@@ -14,11 +14,13 @@ internal fun reading(
     mode: Mode,
     isOverload: Boolean = false,
     isUnderload: Boolean = false,
+    decimals: Int = 4,
 ): Ut61eReading = Ut61eReading(
     value = value,
     unit = unit,
     mode = mode,
     rangeIndex = 0,
+    decimals = decimals,
     isAC = false,
     isDC = true,
     isAuto = true,
@@ -110,6 +112,19 @@ class ConverterTest {
         )
         val r = converter.convert(reading(100.0, "kΩ", Mode.RESISTANCE), settings)
         assertEquals("°C (thermistor)", r.unit)
+    }
+
+    /** Display resolution: the meter's own for raw readings, the conversion's otherwise. */
+    @Test
+    fun `decimals follow the reading or the conversion`() {
+        val mv = reading(225.8, "mV", Mode.VOLTAGE, decimals = 2)
+        assertEquals(2, converter.convert(mv, Settings()).decimals)
+
+        val tc = Settings(tcMode = true, tcSensitivity = 0.0405, tcReferenceId = -1)
+        assertEquals(1, converter.convert(mv, tc).decimals)
+
+        val shunt = Settings(shuntMode = true, shuntOhm = 0.001)
+        assertEquals(3, converter.convert(reading(0.1, "V", Mode.VOLTAGE), shunt).decimals)
     }
 
     @Test

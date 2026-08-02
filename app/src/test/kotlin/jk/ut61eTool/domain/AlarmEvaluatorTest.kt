@@ -41,13 +41,20 @@ class AlarmEvaluatorTest {
         assertTrue(e.evaluate(11.0, above))
     }
 
+    /** Regression: it used to reset on trigger, so the alarm flashed on and off. */
     @Test
-    fun `fires again after the counter is consumed`() {
+    fun `stays true while the value stays out of range`() {
+        val e = AlarmEvaluator()
+        repeat(2) { assertFalse(e.evaluate(11.0, above)) }
+        repeat(10) { assertTrue(e.evaluate(11.0, above)) }
+    }
+
+    @Test
+    fun `clears as soon as a sample is back in range`() {
         val e = AlarmEvaluator()
         repeat(3) { e.evaluate(11.0, above) }
+        assertFalse(e.evaluate(5.0, above))
         assertFalse(e.evaluate(11.0, above))
-        assertFalse(e.evaluate(11.0, above))
-        assertTrue(e.evaluate(11.0, above))
     }
 
     @Test

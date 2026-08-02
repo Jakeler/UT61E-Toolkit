@@ -33,8 +33,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.Locale
 import java.util.UUID
@@ -141,10 +144,40 @@ class MeterService : LifecycleService() {
             val uuid = runCatching { UUID.fromString(current.characteristicUuid) }
                 .getOrElse { UUID.fromString(Settings().characteristicUuid) }
 
-            connection.connect(target.address, uuid)
-                .catch { e -> onDisconnected(e.message) }
-                .collect { event -> handleEvent(event) }
+            keepConnected(target, uuid)
         }
+    }
+
+    /**
+     * Holds the link up until the user disconnects or the meter stays away.
+     *
+     * The meter drops the link by itself — switching range is enough to do it — and
+     * without this the session was over: the user had to disconnect, scan and connect
+     * again to get their reading back. Each attempt is a fresh [MeterConnection] flow,
+     * since a closed GATT client cannot be reused.
+     */
+    private suspend fun keepConnected(target: DeviceInfo, uuid: UUID) {
+        var failures = 0
+
+        while (currentCoroutineContext().isActive) {
+            assembler.reset()
+            connection.connect(target.address, uuid)
+                // A failed attempt is just an attempt that ends early.
+                .catch { }
+                .collect { event ->
+                    // Any traffic means the meter is there; a later drop starts its
+                    // own backoff instead of inheriting an old one.
+                    if (event is MeterConnectionEvent.Data) failures = 0
+                    handleEvent(event)
+                }
+
+            // The flow only completes once the link is gone, one way or another.
+            if (++failures > MAX_RECONNECT_ATTEMPTS) break
+            publishState(ConnectionState.CONNECTING)
+            delay(reconnectDelayMs(failures))
+        }
+
+        onDisconnected()
     }
 
     private suspend fun handleEvent(event: MeterConnectionEvent) {
@@ -153,7 +186,8 @@ class MeterService : LifecycleService() {
             MeterConnectionEvent.Connected -> publishState(ConnectionState.CONNECTED)
             MeterConnectionEvent.ServicesReady -> updateNotification(throttled = false)
             is MeterConnectionEvent.Data -> onData(event.bytes)
-            is MeterConnectionEvent.Disconnected -> onDisconnected(event.reason)
+            // The link is down; keepConnected decides whether to try again.
+            is MeterConnectionEvent.Disconnected -> Unit
         }
     }
 
@@ -165,7 +199,8 @@ class MeterService : LifecycleService() {
         stopSelf()
     }
 
-    private fun onDisconnected(reason: String?) {
+    /** The meter is gone for good: either it never came back, or the flow failed. */
+    private fun onDisconnected() {
         connectionJob = null
         publishState(ConnectionState.DISCONNECTED)
         if (alarmActive) {
@@ -364,6 +399,7 @@ class MeterService : LifecycleService() {
         private const val ALARM_NOTIFICATION_ID = 43
         private const val NOTIFICATION_THROTTLE_MS = 1_000L
 
+
         private val VIBRATION_PATTERN = longArrayOf(0, 500, 500)
 
         private const val FOREGROUND_TYPES =
@@ -403,3 +439,22 @@ class MeterServiceCommander(context: Context) : MeterCommander {
         ContextCompat.startForegroundService(appContext, intent)
     }
 }
+
+/**
+ * Consecutive failed attempts before a session is given up. The count resets on every
+ * sample received, so this is "the meter has been away for about a minute", not "the
+ * link has dropped ten times".
+ */
+internal const val MAX_RECONNECT_ATTEMPTS = 10
+
+/**
+ * Backoff before the [failures]-th consecutive retry: fast enough that a range switch
+ * is barely visible, slow enough not to hammer the radio while the meter is off.
+ */
+internal fun reconnectDelayMs(failures: Int): Long =
+    (FIRST_RECONNECT_DELAY_MS shl (failures - 1).coerceIn(0, RECONNECT_BACKOFF_STEPS))
+        .coerceAtMost(MAX_RECONNECT_DELAY_MS)
+
+private const val FIRST_RECONNECT_DELAY_MS = 500L
+private const val MAX_RECONNECT_DELAY_MS = 8_000L
+private const val RECONNECT_BACKOFF_STEPS = 4

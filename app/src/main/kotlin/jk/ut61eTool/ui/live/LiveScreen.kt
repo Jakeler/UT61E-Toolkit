@@ -251,7 +251,8 @@ private fun ReadoutCard(uiState: LiveUiState) {
                 .fillMaxWidth()
                 .padding(vertical = 20.dp, horizontal = 16.dp),
         ) {
-            if (uiState.connectionState == ConnectionState.CONNECTING) {
+            val connecting = uiState.connectionState == ConnectionState.CONNECTING
+            if (connecting && uiState.reading == null) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
@@ -262,7 +263,13 @@ private fun ReadoutCard(uiState: LiveUiState) {
                     Text(stringResource(R.string.working))
                 }
             } else {
-                ValueDisplay(reading = uiState.reading)
+                // The meter drops the link on a range switch and the service
+                // reconnects by itself; blanking the readout for that second would
+                // read as a fault. The last value stays, dimmed, until it is back.
+                ValueDisplay(
+                    reading = uiState.reading,
+                    modifier = Modifier.alpha(if (connecting) STALE_ALPHA else 1f),
+                )
             }
 
             if (uiState.alarmActive) {
@@ -528,6 +535,9 @@ private fun ConnectionLabel(state: ConnectionState) {
         )
     }
 }
+
+/** How far the readout fades while the link is down and the value is stale. */
+private const val STALE_ALPHA = 0.4f
 
 private val TWO_PANE_MIN_WIDTH = 600.dp
 private val MIN_GRAPH_HEIGHT = 180.dp

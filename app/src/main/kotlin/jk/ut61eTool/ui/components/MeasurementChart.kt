@@ -36,6 +36,7 @@ import com.patrykandpatrick.vico.compose.cartesian.data.CartesianLayerRangeProvi
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.compose.cartesian.data.lineSeries
 import com.patrykandpatrick.vico.compose.cartesian.decoration.Decoration
+import com.patrykandpatrick.vico.compose.cartesian.decoration.HorizontalBox
 import com.patrykandpatrick.vico.compose.cartesian.decoration.HorizontalLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
@@ -264,13 +265,22 @@ internal fun labelSpacing(sampleRateHz: Double?, size: Int): Int {
 internal fun labelOffset(sampleRateHz: Double?, size: Int): Int =
     if (size <= 0) 0 else (size - 1) % labelSpacing(sampleRateHz, size)
 
-/** Min / max / average as guide lines, in the same order as [ChartLegend]. */
+/**
+ * Min / max / average as dashed guide lines, in the same order as [ChartLegend],
+ * over a band of one mean deviation either side of the average — the trace sitting
+ * inside that band, or breaking out of it, is the reading's stability at a glance.
+ */
 @Composable
 private fun guideDecorations(stats: WindowStats?): List<Decoration> {
     if (stats == null) return emptyList()
     val colors = guideColors()
-    return remember(stats, colors) {
-        listOf(stats.max, stats.average, stats.min).mapIndexed { index, value ->
+    val bandColor = deviationColor()
+    return remember(stats, colors, bandColor) {
+        val band = HorizontalBox(
+            y = { (stats.average - stats.meanDeviation)..(stats.average + stats.meanDeviation) },
+            box = ShapeComponent(fill = Fill(bandColor)),
+        )
+        val lines = listOf(stats.max, stats.average, stats.min).mapIndexed { index, value ->
             HorizontalLine(
                 y = { value },
                 line = LineComponent(
@@ -281,8 +291,12 @@ private fun guideDecorations(stats: WindowStats?): List<Decoration> {
                 ),
             )
         }
+        listOf(band) + lines
     }
 }
+
+@Composable
+private fun deviationColor(): Color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.18f)
 
 @Composable
 private fun guideColors(): List<Color> = listOf(
@@ -310,23 +324,46 @@ fun ChartLegend(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         labels.forEachIndexed { index, (label, value) ->
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
+            LegendEntry(label = label, value = value, unit = unit) {
                 Box(
                     modifier = Modifier
                         .size(width = 14.dp, height = GUIDE_THICKNESS)
                         .background(colors[index]),
                 )
-                Text(
-                    text = "$label ${formatMeasurement(value, unit)}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                )
             }
         }
+        LegendEntry(
+            label = stringResource(R.string.stats_deviation_band),
+            value = stats.meanDeviation,
+            unit = unit,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(width = 14.dp, height = 10.dp)
+                    .background(deviationColor()),
+            )
+        }
+    }
+}
+
+@Composable
+private fun LegendEntry(
+    label: String,
+    value: Double,
+    unit: String,
+    swatch: @Composable () -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        swatch()
+        Text(
+            text = "$label ${formatMeasurement(value, unit)}",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+        )
     }
 }
 

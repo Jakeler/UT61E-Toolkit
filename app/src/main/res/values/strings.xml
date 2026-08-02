@@ -54,6 +54,7 @@
     <string name="stats_max">Max</string>
     <string name="stats_avg">Avg</string>
     <string name="stats_dev">Mean dev.</string>
+    <string name="stats_deviation_band">±</string>
 
     <!-- Log file list -->
     <string name="logfiles_title">Select logfile</string>

@@ -29,13 +29,16 @@
     <string name="unknown_device">Unknown device</string>
 
     <!-- Live -->
-    <string name="live_alarm_active">Alarm: the configured limit condition is met</string>
     <string name="live_logging_title">Data logging</string>
     <string name="live_logging_filename">File name</string>
     <string name="live_logging_start">Start logging</string>
     <string name="live_logging_stop">Stop logging</string>
     <string name="live_logging_info">%1$s • %2$.2f KB • %3$d data points</string>
-    <string name="live_samples">%1$d samples</string>
+    <string name="live_logging_recording">REC · %1$s · %2$d points</string>
+    <string name="live_logging_expand">Logging options</string>
+    <string name="live_rate">%1$.1f /s • %2$d samples</string>
+    <string name="live_alarm">ALARM</string>
+    <string name="live_hold">Hold</string>
 
     <!-- Measurement display -->
     <string name="badge_ac">AC</string>

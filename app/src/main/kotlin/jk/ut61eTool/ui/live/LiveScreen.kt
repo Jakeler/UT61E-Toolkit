@@ -2,8 +2,19 @@
 
 package jk.ut61eTool.ui.live
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,28 +23,36 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BluetoothDisabled
-import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,8 +69,10 @@ import jk.ut61eTool.ui.components.previewReading
 import jk.ut61eTool.ui.theme.UT61eToolkitTheme
 
 /**
- * Live measurement view, replacing the legacy LogActivity: readout, rolling
- * chart with window statistics, alarm banner and the logging controls.
+ * Live measurement view: the readout, a rolling chart with window statistics, and
+ * the logging controls. The layout keeps a fixed shape while values change — the
+ * alarm tints the readout instead of inserting a banner, and logging collapses to a
+ * single row until the user opens it.
  */
 @Composable
 fun LiveScreen(
@@ -60,6 +81,10 @@ fun LiveScreen(
     viewModel: LiveViewModel = viewModel(factory = LiveViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // A bench meter that blanks mid-measurement is useless.
+    val view = LocalView.current
+    view.keepScreenOn = uiState.connectionState != ConnectionState.DISCONNECTED
 
     LiveScreenContent(
         uiState = uiState,
@@ -70,6 +95,7 @@ fun LiveScreen(
         },
         onFileNameChange = viewModel::onFileNameChange,
         onToggleLogging = viewModel::setLogging,
+        onToggleHold = viewModel::setHold,
         modifier = modifier,
     )
 }
@@ -81,6 +107,7 @@ private fun LiveScreenContent(
     onDisconnect: () -> Unit,
     onFileNameChange: (String) -> Unit,
     onToggleLogging: (Boolean) -> Unit,
+    onToggleHold: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -96,11 +123,7 @@ private fun LiveScreenContent(
                                 },
                             style = MaterialTheme.typography.titleMedium,
                         )
-                        Text(
-                            text = connectionLabel(uiState.connectionState),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                        ConnectionLabel(uiState.connectionState)
                     }
                 },
                 navigationIcon = {
@@ -122,144 +145,207 @@ private fun LiveScreenContent(
             )
         },
     ) { innerPadding ->
-        Column(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(innerPadding),
         ) {
-            if (uiState.alarmActive) {
-                AlarmBanner()
-            }
+            // Landscape and tablets: readout beside the graph instead of below it.
+            val twoPane = maxWidth >= TWO_PANE_MIN_WIDTH
 
-            ElevatedCard(Modifier.fillMaxWidth()) {
+            if (twoPane) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        ReadoutCard(uiState)
+                        LoggingCard(uiState, onFileNameChange, onToggleLogging)
+                    }
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState()),
+                    ) {
+                        GraphCard(uiState, onToggleHold)
+                    }
+                }
+            } else {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 20.dp, horizontal = 16.dp),
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    if (uiState.connectionState == ConnectionState.CONNECTING) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            CircularProgressIndicator(Modifier.size(20.dp))
-                            Spacer(Modifier.width(12.dp))
-                            Text(stringResource(R.string.working))
-                        }
-                    } else {
-                        ValueDisplay(reading = uiState.reading)
+                    ReadoutCard(uiState)
+                    GraphCard(uiState, onToggleHold)
+                    LoggingCard(uiState, onFileNameChange, onToggleLogging)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * The readout. On alarm the card itself turns red rather than a banner appearing
+ * above it, so nothing on the screen moves.
+ */
+@Composable
+private fun ReadoutCard(uiState: LiveUiState) {
+    val container by animateColorAsState(
+        targetValue = if (uiState.alarmActive) {
+            MaterialTheme.colorScheme.errorContainer
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerLow
+        },
+        label = "readoutContainer",
+    )
+    val content = if (uiState.alarmActive) {
+        MaterialTheme.colorScheme.onErrorContainer
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = container,
+            contentColor = content,
+        ),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 20.dp, horizontal = 16.dp),
+        ) {
+            if (uiState.connectionState == ConnectionState.CONNECTING) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    CircularProgressIndicator(Modifier.size(20.dp))
+                    Spacer(Modifier.width(12.dp))
+                    Text(stringResource(R.string.working))
+                }
+            } else {
+                ValueDisplay(reading = uiState.reading)
+            }
+
+            if (uiState.alarmActive) {
+                Text(
+                    text = stringResource(R.string.live_alarm),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.align(Alignment.TopEnd),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun GraphCard(uiState: LiveUiState, onToggleHold: (Boolean) -> Unit) {
+    ElevatedCard(Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp, horizontal = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = uiState.sampleRateHz?.let {
+                        stringResource(R.string.live_rate, it, uiState.sampleCount)
+                    }.orEmpty(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                FilterChip(
+                    selected = uiState.held,
+                    onClick = { onToggleHold(!uiState.held) },
+                    label = { Text(stringResource(R.string.live_hold)) },
+                )
+            }
+            MeasurementChart(
+                values = uiState.windowValues,
+                unit = uiState.unit,
+                // A held graph is a still image: labelling it "now" would be a lie.
+                sampleRateHz = uiState.sampleRateHz.takeUnless { uiState.held },
+            )
+            StatsRow(
+                stats = uiState.stats,
+                unit = uiState.unit,
+                modifier = Modifier.padding(horizontal = 8.dp),
+            )
+        }
+    }
+}
+
+/**
+ * Logging, collapsed to one row until the user opens it — the controls are only
+ * needed when a recording starts or stops.
+ */
+@Composable
+private fun LoggingCard(
+    uiState: LiveUiState,
+    onFileNameChange: (String) -> Unit,
+    onToggleLogging: (Boolean) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val logging = uiState.logging
+
+    ElevatedCard(Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (logging.running) {
+                    RecordingStatus(logging)
+                } else {
+                    Text(
+                        text = stringResource(R.string.live_logging_title),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                }
+                if (logging.running) {
+                    TextButton(onClick = { onToggleLogging(false) }) {
+                        Text(stringResource(R.string.live_logging_stop))
+                    }
+                } else {
+                    TextButton(onClick = { expanded = !expanded }) {
+                        Text(stringResource(R.string.live_logging_expand))
                     }
                 }
             }
 
-            ElevatedCard(Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp, horizontal = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    MeasurementChart(
-                        values = uiState.windowValues,
-                        unit = uiState.unit,
-                    )
-                    StatsRow(
-                        stats = uiState.stats,
-                        unit = uiState.unit,
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                    )
-                    Text(
-                        text = stringResource(R.string.live_samples, uiState.sampleCount),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                    )
-                }
-            }
-
-            LoggingCard(
-                fileName = uiState.fileName,
-                logging = uiState.logging,
-                onFileNameChange = onFileNameChange,
-                onToggleLogging = onToggleLogging,
-            )
-        }
-    }
-}
-
-@Composable
-private fun AlarmBanner(modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer,
-            contentColor = MaterialTheme.colorScheme.onErrorContainer,
-        ),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(Icons.Default.NotificationsActive, contentDescription = null)
-            Spacer(Modifier.width(12.dp))
-            Text(
-                text = stringResource(R.string.live_alarm_active),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
-    }
-}
-
-@Composable
-private fun LoggingCard(
-    fileName: String,
-    logging: LoggingState,
-    onFileNameChange: (String) -> Unit,
-    onToggleLogging: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    ElevatedCard(modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.live_logging_title),
-                style = MaterialTheme.typography.titleSmall,
-            )
-
-            OutlinedTextField(
-                value = fileName,
-                onValueChange = onFileNameChange,
-                label = { Text(stringResource(R.string.live_logging_filename)) },
-                singleLine = true,
-                enabled = !logging.running,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Button(
-                onClick = { onToggleLogging(!logging.running) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    stringResource(
-                        if (logging.running) R.string.live_logging_stop
-                        else R.string.live_logging_start
-                    )
-                )
+            AnimatedVisibility(visible = expanded && !logging.running) {
+                LoggingControls(uiState, onFileNameChange, onToggleLogging)
             }
 
             val activeName = logging.fileName
-            if (activeName != null) {
+            if (logging.running && activeName != null) {
                 Text(
                     text = stringResource(
                         R.string.live_logging_info,
@@ -285,13 +371,97 @@ private fun LoggingCard(
 }
 
 @Composable
-private fun connectionLabel(state: ConnectionState): String = stringResource(
-    when (state) {
-        ConnectionState.CONNECTED -> R.string.state_connected
-        ConnectionState.CONNECTING -> R.string.state_connecting
-        ConnectionState.DISCONNECTED -> R.string.state_disconnected
+private fun LoggingControls(
+    uiState: LiveUiState,
+    onFileNameChange: (String) -> Unit,
+    onToggleLogging: (Boolean) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        OutlinedTextField(
+            value = uiState.fileName,
+            onValueChange = onFileNameChange,
+            label = { Text(stringResource(R.string.live_logging_filename)) },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Button(
+            onClick = { onToggleLogging(true) },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.live_logging_start))
+        }
     }
-)
+}
+
+/** `● REC · file.csv · 128 points`, the dot pulsing while data is being written. */
+@Composable
+private fun RecordingStatus(logging: LoggingState) {
+    val pulse by rememberInfiniteTransition(label = "rec").animateFloat(
+        initialValue = 0.35f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
+        label = "recAlpha",
+    )
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .alpha(pulse)
+                .size(10.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.error),
+        )
+        Text(
+            text = stringResource(
+                R.string.live_logging_recording,
+                logging.fileName.orEmpty(),
+                logging.lineCount,
+            ),
+            style = MaterialTheme.typography.titleSmall,
+        )
+    }
+}
+
+/** Connection state as a colored dot plus its label, readable at a glance. */
+@Composable
+private fun ConnectionLabel(state: ConnectionState) {
+    val color = when (state) {
+        ConnectionState.CONNECTED -> ConnectedColor
+        ConnectionState.CONNECTING -> ConnectingColor
+        ConnectionState.DISCONNECTED -> MaterialTheme.colorScheme.outline
+    }
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .clip(CircleShape)
+                .background(color),
+        )
+        Text(
+            text = stringResource(
+                when (state) {
+                    ConnectionState.CONNECTED -> R.string.state_connected
+                    ConnectionState.CONNECTING -> R.string.state_connecting
+                    ConnectionState.DISCONNECTED -> R.string.state_disconnected
+                },
+            ),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+private val TWO_PANE_MIN_WIDTH = 600.dp
+
+// Link state is a signal, not a brand colour, so these stay outside the M3 scheme.
+private val ConnectedColor = Color(0xFF2E7D32)
+private val ConnectingColor = Color(0xFFF9A825)
 
 @Preview(showBackground = true)
 @Composable
@@ -305,12 +475,14 @@ private fun LiveScreenPreview() {
                 reading = previewReading(),
                 windowValues = listOf(4.90, 4.93, 4.95, 4.91, 4.88, 4.94),
                 unit = "V",
+                sampleRateHz = 2.0,
                 logging = LoggingState(running = true, fileName = "logfile.csv", lineCount = 42),
             ),
             onBack = {},
             onDisconnect = {},
             onFileNameChange = {},
             onToggleLogging = {},
+            onToggleHold = {},
         )
     }
 }

@@ -56,6 +56,14 @@ class MeterRepository {
     private val _alarmActive = MutableStateFlow(false)
     val alarmActive: StateFlow<Boolean> = _alarmActive.asStateFlow()
 
+    /**
+     * Arrival time of the newest sample, in nanoseconds. Readings themselves are
+     * conflated when the value does not change, so the UI derives the sample rate
+     * from this instead — a steady meter still ticks here.
+     */
+    private val _lastSampleNanos = MutableStateFlow(0L)
+    val lastSampleNanos: StateFlow<Long> = _lastSampleNanos.asStateFlow()
+
     /** Installed by the service layer; null while no service is available. */
     var commander: MeterCommander? = null
 
@@ -73,6 +81,7 @@ class MeterRepository {
      */
     fun publishReading(reading: DisplayReading, windowSize: Int, includeInWindow: Boolean = true) {
         _latestReading.value = reading
+        _lastSampleNanos.value = System.nanoTime()
         if (includeInWindow) {
             _window.value = (_window.value + reading).takeLast(windowSize.coerceAtLeast(1))
         }
@@ -90,5 +99,6 @@ class MeterRepository {
         _latestReading.value = null
         _window.value = emptyList()
         _alarmActive.value = false
+        _lastSampleNanos.value = 0L
     }
 }

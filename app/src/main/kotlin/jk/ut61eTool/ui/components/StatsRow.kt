@@ -14,11 +14,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import jk.ut61eTool.R
 import jk.ut61eTool.data.WindowStats
+import jk.ut61eTool.ui.theme.StatValueStyle
 import jk.ut61eTool.ui.theme.UT61eToolkitTheme
 
 /**
- * Compact min / max / average / mean-deviation summary of the visible window,
- * replacing the legacy single-line `graphdata_info` label.
+ * Compact min / max / average / mean-deviation summary of the visible window.
+ *
+ * The unit is stated once above the row instead of on every cell: repeating it four
+ * times only widened the columns and pushed the numbers around.
  */
 @Composable
 fun StatsRow(
@@ -26,14 +29,26 @@ fun StatsRow(
     modifier: Modifier = Modifier,
     unit: String = "",
 ) {
-    Row(
+    Column(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        StatCell(stringResource(R.string.stats_min), stats?.min, unit, Modifier.weight(1f))
-        StatCell(stringResource(R.string.stats_max), stats?.max, unit, Modifier.weight(1f))
-        StatCell(stringResource(R.string.stats_avg), stats?.average, unit, Modifier.weight(1f))
-        StatCell(stringResource(R.string.stats_dev), stats?.meanDeviation, unit, Modifier.weight(1f))
+        if (unit.isNotBlank()) {
+            Text(
+                text = unit,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+            StatCell(stringResource(R.string.stats_min), stats?.min, Modifier.weight(1f))
+            StatCell(stringResource(R.string.stats_max), stats?.max, Modifier.weight(1f))
+            StatCell(stringResource(R.string.stats_avg), stats?.average, Modifier.weight(1f))
+            StatCell(stringResource(R.string.stats_dev), stats?.meanDeviation, Modifier.weight(1f))
+        }
     }
 }
 
@@ -41,7 +56,6 @@ fun StatsRow(
 private fun StatCell(
     label: String,
     value: Double?,
-    unit: String,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -55,8 +69,8 @@ private fun StatCell(
             textAlign = TextAlign.Center,
         )
         Text(
-            text = value?.let { formatMeasurement(it, unit) } ?: "–",
-            style = MaterialTheme.typography.bodyMedium,
+            text = value?.let { formatMeasurement(it) } ?: "–",
+            style = StatValueStyle,
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
             textAlign = TextAlign.Center,

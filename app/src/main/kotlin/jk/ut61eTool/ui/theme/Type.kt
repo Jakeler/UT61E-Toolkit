@@ -27,3 +27,11 @@ val MeasurementValueStyle = TextStyle(
     fontSize = 48.sp,
     lineHeight = 56.sp,
 )
+
+/** The same tabular treatment for the statistics, so their columns stop twitching. */
+val StatValueStyle = TextStyle(
+    fontFamily = FontFamily.Monospace,
+    fontWeight = FontWeight.Normal,
+    fontSize = 14.sp,
+    lineHeight = 20.sp,
+)

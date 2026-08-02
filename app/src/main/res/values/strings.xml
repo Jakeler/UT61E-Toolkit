@@ -39,6 +39,7 @@
     <string name="live_rate">%1$.1f /s • %2$d samples</string>
     <string name="live_alarm">ALARM</string>
     <string name="live_hold">Hold</string>
+    <string name="live_graph_fullscreen">Fullscreen graph</string>
 
     <!-- Measurement display -->
     <string name="badge_ac">AC</string>

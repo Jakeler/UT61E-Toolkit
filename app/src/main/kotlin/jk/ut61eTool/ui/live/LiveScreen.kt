@@ -2,6 +2,9 @@
 
 package jk.ut61eTool.ui.live
 
+import android.content.pm.ActivityInfo
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.RepeatMode
@@ -17,9 +20,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -29,6 +35,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BluetoothDisabled
+import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,13 +47,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,8 +73,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import jk.ut61eTool.R
 import jk.ut61eTool.data.ConnectionState
 import jk.ut61eTool.data.LoggingState
+import jk.ut61eTool.ui.components.ChartLegend
 import jk.ut61eTool.ui.components.MeasurementChart
 import jk.ut61eTool.ui.components.StatsRow
+import jk.ut61eTool.ui.components.formatMeasurement
 import jk.ut61eTool.ui.components.ValueDisplay
 import jk.ut61eTool.ui.components.previewReading
 import jk.ut61eTool.ui.theme.UT61eToolkitTheme
@@ -110,6 +123,17 @@ private fun LiveScreenContent(
     onToggleHold: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var fullscreenGraph by rememberSaveable { mutableStateOf(false) }
+    if (fullscreenGraph) {
+        FullscreenGraph(
+            uiState = uiState,
+            onToggleHold = onToggleHold,
+            onClose = { fullscreenGraph = false },
+            modifier = modifier,
+        )
+        return
+    }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -169,24 +193,33 @@ private fun LiveScreenContent(
                         ReadoutCard(uiState)
                         LoggingCard(uiState, onFileNameChange, onToggleLogging)
                     }
-                    Column(
+                    GraphCard(
+                        uiState = uiState,
+                        onToggleHold = onToggleHold,
+                        onFullscreen = { fullscreenGraph = true },
                         modifier = Modifier
                             .weight(1f)
-                            .verticalScroll(rememberScrollState()),
-                    ) {
-                        GraphCard(uiState, onToggleHold)
-                    }
+                            .fillMaxHeight(),
+                    )
                 }
             } else {
+                // Not scrollable: the graph is meant to take whatever the readout and
+                // the logging row leave over.
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     ReadoutCard(uiState)
-                    GraphCard(uiState, onToggleHold)
+                    GraphCard(
+                        uiState = uiState,
+                        onToggleHold = onToggleHold,
+                        onFullscreen = { fullscreenGraph = true },
+                        modifier = Modifier
+                            .weight(1f)
+                            .heightIn(min = MIN_GRAPH_HEIGHT),
+                    )
                     LoggingCard(uiState, onFileNameChange, onToggleLogging)
                 }
             }
@@ -253,18 +286,23 @@ private fun ReadoutCard(uiState: LiveUiState) {
 }
 
 @Composable
-private fun GraphCard(uiState: LiveUiState, onToggleHold: (Boolean) -> Unit) {
-    ElevatedCard(Modifier.fillMaxWidth()) {
+private fun GraphCard(
+    uiState: LiveUiState,
+    onToggleHold: (Boolean) -> Unit,
+    onFullscreen: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    ElevatedCard(modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(vertical = 12.dp, horizontal = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
+                    .padding(start = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -275,23 +313,106 @@ private fun GraphCard(uiState: LiveUiState, onToggleHold: (Boolean) -> Unit) {
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                FilterChip(
-                    selected = uiState.held,
-                    onClick = { onToggleHold(!uiState.held) },
-                    label = { Text(stringResource(R.string.live_hold)) },
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    HoldChip(uiState.held, onToggleHold)
+                    IconButton(onClick = onFullscreen) {
+                        Icon(
+                            imageVector = Icons.Default.Fullscreen,
+                            contentDescription = stringResource(R.string.live_graph_fullscreen),
+                        )
+                    }
+                }
             }
             MeasurementChart(
                 values = uiState.windowValues,
                 unit = uiState.unit,
-                // A held graph is a still image: labelling it "now" would be a lie.
+                // A held graph is a still image; its x axis is no longer "seconds ago".
                 sampleRateHz = uiState.sampleRateHz.takeUnless { uiState.held },
+                height = null,
+                modifier = Modifier.weight(1f),
             )
             StatsRow(
                 stats = uiState.stats,
                 unit = uiState.unit,
                 modifier = Modifier.padding(horizontal = 8.dp),
             )
+        }
+    }
+}
+
+@Composable
+private fun HoldChip(held: Boolean, onToggleHold: (Boolean) -> Unit) {
+    FilterChip(
+        selected = held,
+        onClick = { onToggleHold(!held) },
+        label = { Text(stringResource(R.string.live_hold)) },
+    )
+}
+
+/**
+ * The graph alone, in landscape, with min / max / average drawn as guide lines.
+ * Rotation is forced while it is open and released again on the way out.
+ */
+@Composable
+private fun FullscreenGraph(
+    uiState: LiveUiState,
+    onToggleHold: (Boolean) -> Unit,
+    onClose: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val activity = LocalActivity.current
+    DisposableEffect(activity) {
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        onDispose {
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
+    }
+    BackHandler(onBack = onClose)
+
+    Surface(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .safeDrawingPadding()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = uiState.reading
+                        ?.let { formatMeasurement(it.value, uiState.unit, it.decimals) }
+                        .orEmpty(),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    HoldChip(uiState.held, onToggleHold)
+                    IconButton(onClick = onClose) {
+                        Icon(
+                            imageVector = Icons.Default.FullscreenExit,
+                            contentDescription = stringResource(R.string.action_back),
+                        )
+                    }
+                }
+            }
+            MeasurementChart(
+                values = uiState.windowValues,
+                unit = uiState.unit,
+                sampleRateHz = uiState.sampleRateHz.takeUnless { uiState.held },
+                height = null,
+                guides = uiState.stats,
+                modifier = Modifier.weight(1f),
+            )
+            uiState.stats?.let { ChartLegend(stats = it, unit = uiState.unit) }
         }
     }
 }
@@ -458,6 +579,7 @@ private fun ConnectionLabel(state: ConnectionState) {
 }
 
 private val TWO_PANE_MIN_WIDTH = 600.dp
+private val MIN_GRAPH_HEIGHT = 180.dp
 
 // Link state is a signal, not a brand colour, so these stay outside the M3 scheme.
 private val ConnectedColor = Color(0xFF2E7D32)

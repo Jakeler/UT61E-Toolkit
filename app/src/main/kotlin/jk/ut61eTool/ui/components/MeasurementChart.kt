@@ -1,8 +1,14 @@
 package jk.ut61eTool.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +34,8 @@ import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProdu
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.compose.cartesian.data.lineSeries
+import com.patrykandpatrick.vico.compose.cartesian.decoration.Decoration
+import com.patrykandpatrick.vico.compose.cartesian.decoration.HorizontalLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
@@ -39,16 +47,21 @@ import com.patrykandpatrick.vico.compose.cartesian.marker.rememberDefaultCartesi
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
+import com.patrykandpatrick.vico.compose.common.DashedShape
 import com.patrykandpatrick.vico.compose.common.Fill
 import com.patrykandpatrick.vico.compose.common.ProvideVicoTheme
+import com.patrykandpatrick.vico.compose.common.component.LineComponent
+import com.patrykandpatrick.vico.compose.common.component.ShapeComponent
 import com.patrykandpatrick.vico.compose.common.component.TextComponent
 import com.patrykandpatrick.vico.compose.m3.common.rememberM3VicoTheme
 import jk.ut61eTool.R
+import jk.ut61eTool.data.WindowStats
 import jk.ut61eTool.ui.theme.UT61eToolkitTheme
 import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.log10
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 /**
@@ -67,7 +80,10 @@ fun MeasurementChart(
     modifier: Modifier = Modifier,
     unit: String? = null,
     sampleRateHz: Double? = null,
-    height: Dp = 220.dp,
+    /** Null lets the chart fill whatever space its parent gives it. */
+    height: Dp? = 220.dp,
+    /** When set, min / max / average are drawn as guide lines. */
+    guides: WindowStats? = null,
 ) {
     val modelProducer = remember { CartesianChartModelProducer() }
 
@@ -81,7 +97,7 @@ fun MeasurementChart(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(height),
+            .then(if (height != null) Modifier.height(height) else Modifier.fillMaxHeight()),
         contentAlignment = Alignment.Center,
     ) {
         if (values.isEmpty()) {
@@ -108,6 +124,22 @@ fun MeasurementChart(
                 )
             }
 
+            // Dots mark the individual samples, but only while they are far enough
+            // apart to be read as points rather than a thick line.
+            val pointProvider = if (values.size <= MAX_DOTTED_SAMPLES) {
+                remember(lineColor) {
+                    LineCartesianLayer.PointProvider.single(
+                        LineCartesianLayer.Point(
+                            component = ShapeComponent(fill = Fill(lineColor), shape = CircleShape),
+                            size = 5.dp,
+                        ),
+                    )
+                }
+            } else {
+                null
+            }
+            val guideLines = guideDecorations(guides)
+
             ProvideVicoTheme(rememberM3VicoTheme()) {
                 CartesianChartHost(
                     chart = rememberCartesianChart(
@@ -118,6 +150,7 @@ fun MeasurementChart(
                                         LineCartesianLayer.LineFill.single(Fill(lineColor))
                                     },
                                     areaFill = areaFill,
+                                    pointProvider = pointProvider,
                                 ),
                             ),
                             rangeProvider = remember(range) {
@@ -134,11 +167,19 @@ fun MeasurementChart(
                             valueFormatter = remember(sampleRateHz, values.size) {
                                 TimeAxisFormatter(sampleRateHz, values.lastIndex)
                             },
+                            // Label every whole second: at the default spacing several
+                            // labels fall inside one second and read as duplicates.
+                            itemPlacer = remember(sampleRateHz, values.size) {
+                                HorizontalAxis.ItemPlacer.aligned(
+                                    spacing = { labelSpacing(sampleRateHz, values.size) },
+                                )
+                            },
                         ),
                         marker = rememberDefaultCartesianMarker(
                             label = markerLabel(labelStyle),
                             valueFormatter = markerFormatter,
                         ),
+                        decorations = guideLines,
                     ),
                     modelProducer = modelProducer,
                     scrollState = rememberVicoScrollState(
@@ -190,11 +231,97 @@ private class TimeAxisFormatter(
         value: Double,
         verticalAxisPosition: com.patrykandpatrick.vico.compose.cartesian.axis.Axis.Position.Vertical?,
     ): CharSequence {
-        if (sampleRateHz == null || sampleRateHz <= 0.0) return value.roundToInt().toString()
-        val seconds = (value - lastIndex) / sampleRateHz
-        return if (seconds >= -0.5) "now" else "${seconds.roundToInt()}s"
+        return xAxisLabel(value, sampleRateHz, lastIndex)
     }
 }
+
+/** Sample index, or seconds relative to the newest sample when the rate is known. */
+internal fun xAxisLabel(value: Double, sampleRateHz: Double?, lastIndex: Int): String {
+    if (sampleRateHz == null || sampleRateHz <= 0.0) return value.roundToInt().toString()
+    return "${((value - lastIndex) / sampleRateHz).roundToInt()}s"
+}
+
+/**
+ * Sample indices between two x labels, chosen so that labels land on whole seconds
+ * (~[X_LABEL_COUNT] of them). Anything finer repeats the same rounded second twice.
+ */
+internal fun labelSpacing(sampleRateHz: Double?, size: Int): Int {
+    if (sampleRateHz == null || sampleRateHz <= 0.0) {
+        return max(1, ceil(size.toDouble() / X_LABEL_COUNT).toInt())
+    }
+    val seconds = max(1.0, ceil(size / sampleRateHz / X_LABEL_COUNT))
+    return max(1, (seconds * sampleRateHz).roundToInt())
+}
+
+/** Min / max / average as guide lines, in the same order as [ChartLegend]. */
+@Composable
+private fun guideDecorations(stats: WindowStats?): List<Decoration> {
+    if (stats == null) return emptyList()
+    val colors = guideColors()
+    return remember(stats, colors) {
+        listOf(stats.max, stats.average, stats.min).mapIndexed { index, value ->
+            HorizontalLine(
+                y = { value },
+                line = LineComponent(
+                    fill = Fill(colors[index]),
+                    thickness = GUIDE_THICKNESS,
+                    // Dashed, so a guide is never mistaken for the measured trace.
+                    shape = DashedShape(dashLength = 8.dp, gapLength = 6.dp),
+                ),
+            )
+        }
+    }
+}
+
+@Composable
+private fun guideColors(): List<Color> = listOf(
+    MaterialTheme.colorScheme.error,
+    MaterialTheme.colorScheme.tertiary,
+    MaterialTheme.colorScheme.secondary,
+)
+
+/** Names the guide lines drawn by [MeasurementChart] when it is given statistics. */
+@Composable
+fun ChartLegend(
+    stats: WindowStats,
+    modifier: Modifier = Modifier,
+    unit: String = "",
+) {
+    val colors = guideColors()
+    val labels = listOf(
+        stringResource(R.string.stats_max) to stats.max,
+        stringResource(R.string.stats_avg) to stats.average,
+        stringResource(R.string.stats_min) to stats.min,
+    )
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        labels.forEachIndexed { index, (label, value) ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(width = 14.dp, height = GUIDE_THICKNESS)
+                        .background(colors[index]),
+                )
+                Text(
+                    text = "$label ${formatMeasurement(value, unit)}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                )
+            }
+        }
+    }
+}
+
+private const val X_LABEL_COUNT = 5
+private const val MAX_DOTTED_SAMPLES = 80
+private val GUIDE_THICKNESS = 2.dp
 
 /** Axis labels with just enough decimals to tell adjacent gridlines apart. */
 private class AdaptiveAxisFormatter(range: YRange) : CartesianValueFormatter {

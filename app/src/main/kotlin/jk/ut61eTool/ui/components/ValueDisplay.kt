@@ -93,11 +93,24 @@ private fun ValueLine(reading: DisplayReading?) {
             if (reading != null) LeadingFlags(reading.source)
         }
 
-        NumberSlot(reading)
+        // The number is the flexible element: a Row measures weighted children last,
+        // so the unit keeps its space instead of being squeezed out by a wide value.
+        Box(
+            modifier = Modifier.weight(1f, fill = false),
+            contentAlignment = Alignment.BottomEnd,
+        ) {
+            NumberSlot(reading)
+        }
 
         Spacer(Modifier.width(8.dp))
 
-        UnitGroup(reading)
+        // Fixed too, so switching V <-> mV does not shove the number sideways.
+        Box(
+            modifier = Modifier.width(UNIT_SLOT_WIDTH),
+            contentAlignment = Alignment.BottomStart,
+        ) {
+            UnitGroup(reading)
+        }
     }
 }
 
@@ -206,6 +219,9 @@ private fun UnitGroup(reading: DisplayReading?) {
 }
 
 private val FLAG_SLOT_WIDTH = 52.dp
+
+/** Wide enough for the longest unit plus AC/DC, e.g. `mV DC`. */
+private val UNIT_SLOT_WIDTH = 84.dp
 
 /** Shown before the first sample arrives, so the card does not resize on connect. */
 private const val PLACEHOLDER_TEXT = "––––"

@@ -27,8 +27,13 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!--
+        The service exists to hold the BLE link to the meter open; writing the samples
+        it delivers to a local CSV is part of that session, not a data sync, and the
+        app has no network access at all. dataSync would also put the session under
+        the API 35 six-hour daily cap, which a long recording can exceed.
+    -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <application
         android:name=".UT61eToolkitApp"
@@ -51,7 +56,7 @@
         <service
             android:name=".service.MeterService"
             android:exported="false"
-            android:foregroundServiceType="connectedDevice|dataSync" />
+            android:foregroundServiceType="connectedDevice" />
     </application>
 
 </manifest>

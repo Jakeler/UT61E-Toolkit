@@ -453,12 +453,14 @@ class MeterService : LifecycleService() {
         private const val LINK_LOST_NOTIFICATION_ID = 44
         private const val NOTIFICATION_THROTTLE_MS = 1_000L
 
-
         private val VIBRATION_PATTERN = longArrayOf(0, 500, 500)
 
+        /**
+         * The whole job is keeping the meter's BLE link open; logging what it sends to
+         * a local file is part of that session, not a sync. See the manifest.
+         */
         private const val FOREGROUND_TYPES =
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE or
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
     }
 }
 

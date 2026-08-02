@@ -29,6 +29,8 @@ import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.math.abs
+import kotlin.math.round
 
 data class LiveUiState(
     val connectionState: ConnectionState = ConnectionState.DISCONNECTED,
@@ -49,6 +51,33 @@ data class LiveUiState(
 }
 
 const val DEFAULT_LOG_FILE_NAME = "logfile.csv"
+
+/** Samples per second across a list of arrival timestamps in nanoseconds. */
+internal fun measureRate(times: List<Long>): Double? {
+    if (times.size < 2) return null
+    val span = times.last() - times.first()
+    return if (span <= 0) null else (times.size - 1) * 1e9 / span
+}
+
+/**
+ * Holds the displayed rate steady against measurement jitter.
+ *
+ * The raw rate wanders by a percent or two, which is enough to move `size / rate`
+ * across a whole second: at 60 samples it alternated between 29 and 30, and every
+ * label on the time axis jumped with it. The displayed rate is therefore quantised
+ * and only follows the measurement once it clearly leaves the current value, so a
+ * real change (2 Hz -> 5 Hz) is still picked up.
+ */
+internal fun settleRate(shown: Double?, raw: Double?): Double? {
+    if (raw == null || raw <= 0.0) return shown
+    val quantised = round(raw * RATE_STEPS) / RATE_STEPS
+    if (shown == null) return quantised
+    return if (abs(raw - shown) > shown * RATE_DEADBAND) quantised else shown
+}
+
+/** Tenths of a hertz: finer steps are noise, coarser ones misreport slow meters. */
+private const val RATE_STEPS = 10.0
+private const val RATE_DEADBAND = 0.1
 
 /** Snapshot of the meter flows, kept separate so `combine` stays readable. */
 private data class MeterSnapshot(
@@ -78,17 +107,15 @@ class LiveViewModel(
     private val holdSnapshot = MutableStateFlow<List<DisplayReading>?>(null)
 
     /**
-     * Samples per second, measured over the last [RATE_WINDOW] arrivals. It labels the
-     * chart's time axis, so it is smoothed over several samples rather than the last gap.
+     * Samples per second, measured over the last [RATE_WINDOW] arrivals and then held
+     * steady by [settleRate]. It drives the chart's time axis, so the raw measurement
+     * is too jittery to use directly.
      */
     private val sampleRateHz: StateFlow<Double?> = repository.lastSampleNanos
         .filter { it != 0L }
         .runningFold(emptyList<Long>()) { times, now -> (times + now).takeLast(RATE_WINDOW) }
-        .map { times ->
-            if (times.size < 2) return@map null
-            val span = times.last() - times.first()
-            if (span <= 0) null else (times.size - 1) * 1e9 / span
-        }
+        .map(::measureRate)
+        .runningFold(null as Double?, ::settleRate)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private val meterSnapshot = combine(

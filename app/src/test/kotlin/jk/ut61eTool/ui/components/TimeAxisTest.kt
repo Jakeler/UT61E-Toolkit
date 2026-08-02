@@ -12,7 +12,16 @@ class TimeAxisTest {
 
     private fun labels(rate: Double?, size: Int): List<String> {
         val spacing = labelSpacing(rate, size)
-        return (0 until size step spacing).map { xAxisLabel(it.toDouble(), rate, size - 1) }
+        return (labelOffset(rate, size) until size step spacing)
+            .map { xAxisLabel(it.toDouble(), rate, size - 1) }
+    }
+
+    /** With the offset anchored on the newest sample the labels are exact seconds. */
+    @Test
+    fun `labels sit on whole seconds ending at zero`() {
+        assertEquals(listOf("-24s", "-18s", "-12s", "-6s", "0s"), labels(2.0, 60))
+        // The samples before the first anchored label simply carry none.
+        assertEquals(listOf("-9s", "-6s", "-3s", "0s"), labels(5.0, 60))
     }
 
     @Test

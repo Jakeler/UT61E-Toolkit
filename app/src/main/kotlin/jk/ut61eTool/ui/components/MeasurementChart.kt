@@ -173,6 +173,9 @@ fun MeasurementChart(
                             itemPlacer = remember(sampleRateHz, values.size) {
                                 HorizontalAxis.ItemPlacer.aligned(
                                     spacing = { labelSpacing(sampleRateHz, values.size) },
+                                    // Anchor a label on the newest sample, so the axis
+                                    // reads 0s, -6s, -12s rather than half seconds.
+                                    offset = { labelOffset(sampleRateHz, values.size) },
                                 )
                             },
                         ),
@@ -256,6 +259,10 @@ internal fun labelSpacing(sampleRateHz: Double?, size: Int): Int {
     val seconds = max(1.0, ceil(size / sampleRateHz / X_LABEL_COUNT))
     return max(1, (seconds * sampleRateHz).roundToInt())
 }
+
+/** Index of the first label, placed so that the newest sample carries one. */
+internal fun labelOffset(sampleRateHz: Double?, size: Int): Int =
+    if (size <= 0) 0 else (size - 1) % labelSpacing(sampleRateHz, size)
 
 /** Min / max / average as guide lines, in the same order as [ChartLegend]. */
 @Composable

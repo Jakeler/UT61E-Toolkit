@@ -9,6 +9,7 @@
     <string name="action_disconnect">Disconnect</string>
     <string name="no_data">No data</string>
     <string name="working">Please wait…</string>
+    <string name="graph_fullscreen">Fullscreen graph</string>
 
     <!-- Home -->
     <string name="home_subtitle">Log and analyse your UT61E multimeter</string>
@@ -39,7 +40,6 @@
     <string name="live_rate">%1$.1f /s • %2$d samples</string>
     <string name="live_alarm">ALARM</string>
     <string name="live_hold">Hold</string>
-    <string name="live_graph_fullscreen">Fullscreen graph</string>
 
     <!-- Measurement display -->
     <string name="badge_ac">AC</string>

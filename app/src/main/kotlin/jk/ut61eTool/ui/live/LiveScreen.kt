@@ -2,9 +2,6 @@
 
 package jk.ut61eTool.ui.live
 
-import android.content.pm.ActivityInfo
-import androidx.activity.compose.BackHandler
-import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.RepeatMode
@@ -25,7 +22,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -36,7 +32,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BluetoothDisabled
 import androidx.compose.material.icons.filled.Fullscreen
-import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -47,12 +42,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -74,7 +67,7 @@ import jk.ut61eTool.R
 import jk.ut61eTool.data.ConnectionState
 import jk.ut61eTool.data.LoggingState
 import jk.ut61eTool.domain.windowStats
-import jk.ut61eTool.ui.components.ChartLegend
+import jk.ut61eTool.ui.components.FullscreenChart
 import jk.ut61eTool.ui.components.MeasurementChart
 import jk.ut61eTool.ui.components.StatsRow
 import jk.ut61eTool.ui.components.formatMeasurement
@@ -322,7 +315,7 @@ private fun GraphCard(
                     IconButton(onClick = onFullscreen) {
                         Icon(
                             imageVector = Icons.Default.Fullscreen,
-                            contentDescription = stringResource(R.string.live_graph_fullscreen),
+                            contentDescription = stringResource(R.string.graph_fullscreen),
                         )
                     }
                 }
@@ -354,10 +347,7 @@ private fun HoldChip(held: Boolean, onToggleHold: (Boolean) -> Unit) {
     )
 }
 
-/**
- * The graph alone, in landscape, with min / max / average drawn as guide lines.
- * Rotation is forced while it is open and released again on the way out.
- */
+/** The live window fullscreen, headed by the current reading. */
 @Composable
 private fun FullscreenGraph(
     uiState: LiveUiState,
@@ -365,59 +355,19 @@ private fun FullscreenGraph(
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val activity = LocalActivity.current
-    DisposableEffect(activity) {
-        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-        onDispose {
-            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-        }
-    }
-    BackHandler(onBack = onClose)
-
-    Surface(modifier = modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .safeDrawingPadding()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = uiState.reading
-                        ?.let { formatMeasurement(it.value, uiState.unit, it.decimals) }
-                        .orEmpty(),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    HoldChip(uiState.held, onToggleHold)
-                    IconButton(onClick = onClose) {
-                        Icon(
-                            imageVector = Icons.Default.FullscreenExit,
-                            contentDescription = stringResource(R.string.action_back),
-                        )
-                    }
-                }
-            }
-            MeasurementChart(
-                values = uiState.windowValues,
-                unit = uiState.unit,
-                sampleRateHz = uiState.sampleRateHz.takeUnless { uiState.held },
-                height = null,
-                guides = uiState.stats,
-                capacity = uiState.windowCapacity,
-                modifier = Modifier.weight(1f),
-            )
-            uiState.stats?.let { ChartLegend(stats = it, unit = uiState.unit) }
-        }
-    }
+    FullscreenChart(
+        values = uiState.windowValues,
+        unit = uiState.unit,
+        onClose = onClose,
+        modifier = modifier,
+        title = uiState.reading
+            ?.let { formatMeasurement(it.value, uiState.unit, it.decimals) }
+            .orEmpty(),
+        sampleRateHz = uiState.sampleRateHz.takeUnless { uiState.held },
+        stats = uiState.stats,
+        capacity = uiState.windowCapacity,
+        actions = { HoldChip(uiState.held, onToggleHold) },
+    )
 }
 
 /**

@@ -24,6 +24,14 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    buildTypes {
+        release {
+            optimization {
+                enable = true // Enables code and resource optimizations.
+            }
+        }
+    }
 }
 
 kotlin {

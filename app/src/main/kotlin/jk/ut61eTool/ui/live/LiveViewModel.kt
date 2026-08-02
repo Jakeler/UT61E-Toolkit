@@ -83,14 +83,17 @@ class LiveViewModel(
         repository.loggingState,
         userFileName,
     ) { meter, logging, editedName ->
-        val values = meter.window.map { it.value }
+        val unit = meter.reading?.unit ?: meter.window.lastOrNull()?.unit.orEmpty()
+        // A mode change mid-session leaves old-unit samples in the window;
+        // graphing them against the current unit's scale is meaningless.
+        val values = meter.window.filter { it.unit == unit }.map { it.value }
         LiveUiState(
             connectionState = meter.connectionState,
             deviceAddress = meter.device?.address ?: address,
             deviceName = meter.device?.name ?: deviceName,
             reading = meter.reading,
             windowValues = values,
-            unit = meter.reading?.unit ?: meter.window.lastOrNull()?.unit.orEmpty(),
+            unit = unit,
             stats = values.windowStats(),
             logging = logging,
             alarmActive = meter.alarmActive,

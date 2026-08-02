@@ -26,25 +26,38 @@ data class ViewerUiState(
     val loading: Boolean = true,
     val sessions: List<LogSession> = emptyList(),
     val selectedIndex: Int = 0,
+    val selectedUnit: String? = null,
     val failed: Boolean = false,
 ) {
     val selectedSession: LogSession? get() = sessions.getOrNull(selectedIndex)
 
-    val values: List<Double> get() = selectedSession?.points?.map { it.value }.orEmpty()
+    /**
+     * Units present in the session, in order of first appearance. A session can
+     * contain several when the meter's mode was changed mid-recording — each is
+     * graphed separately, since their values share no scale.
+     */
+    val units: List<String>
+        get() = selectedSession?.points?.map { it.unit }?.distinct().orEmpty()
+
+    /** The unit being graphed: the user's pick, or the one with the most points. */
+    val activeUnit: String
+        get() = selectedUnit?.takeIf { it in units }
+            ?: selectedSession?.points
+                ?.groupingBy { it.unit }
+                ?.eachCount()
+                ?.maxByOrNull { it.value }
+                ?.key
+                .orEmpty()
+
+    val values: List<Double>
+        get() = selectedSession?.points
+            ?.filter { it.unit == activeUnit }
+            ?.map { it.value }
+            .orEmpty()
 
     val stats: WindowStats? get() = values.windowStats()
 
-    /** The unit most of the session's points carry; blank for a mixed session. */
-    val dominantUnit: String
-        get() = selectedSession
-            ?.points
-            ?.groupingBy { it.unit }
-            ?.eachCount()
-            ?.maxByOrNull { it.value }
-            ?.key
-            .orEmpty()
-
-    val pointCount: Int get() = selectedSession?.points?.size ?: 0
+    val pointCount: Int get() = values.size
 }
 
 /** Replaces the legacy ViewLogActivity. */
@@ -64,7 +77,11 @@ class ViewerViewModel(
     }
 
     fun selectSession(index: Int) {
-        _uiState.value = _uiState.value.copy(selectedIndex = index)
+        _uiState.value = _uiState.value.copy(selectedIndex = index, selectedUnit = null)
+    }
+
+    fun selectUnit(unit: String) {
+        _uiState.value = _uiState.value.copy(selectedUnit = unit)
     }
 
     private fun load() {

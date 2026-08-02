@@ -2,12 +2,15 @@
 
 package jk.ut61eTool.ui.viewer
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
@@ -15,6 +18,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -88,6 +92,7 @@ fun ViewerScreen(
                 else -> ViewerContent(
                     uiState = uiState,
                     onSelectSession = viewModel::selectSession,
+                    onSelectUnit = viewModel::selectUnit,
                 )
             }
         }
@@ -98,6 +103,7 @@ fun ViewerScreen(
 private fun ViewerContent(
     uiState: ViewerUiState,
     onSelectSession: (Int) -> Unit,
+    onSelectUnit: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -112,6 +118,14 @@ private fun ViewerContent(
             onSelect = onSelectSession,
         )
 
+        if (uiState.units.size > 1) {
+            UnitPicker(
+                units = uiState.units,
+                activeUnit = uiState.activeUnit,
+                onSelect = onSelectUnit,
+            )
+        }
+
         ElevatedCard(Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier
@@ -121,12 +135,12 @@ private fun ViewerContent(
             ) {
                 MeasurementChart(
                     values = uiState.values,
-                    unit = uiState.dominantUnit,
+                    unit = uiState.activeUnit,
                     height = 260.dp,
                 )
                 StatsRow(
                     stats = uiState.stats,
-                    unit = uiState.dominantUnit,
+                    unit = uiState.activeUnit,
                     modifier = Modifier.padding(horizontal = 8.dp),
                 )
             }
@@ -136,11 +150,35 @@ private fun ViewerContent(
             text = stringResource(
                 R.string.viewer_summary,
                 uiState.pointCount,
-                uiState.dominantUnit,
+                uiState.activeUnit,
             ),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+/** One chip per unit found in the session (mid-recording mode changes). */
+@Composable
+private fun UnitPicker(
+    units: List<String>,
+    activeUnit: String,
+    onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        units.forEach { unit ->
+            FilterChip(
+                selected = unit == activeUnit,
+                onClick = { onSelect(unit) },
+                label = { Text(unit.ifBlank { "?" }) },
+            )
+        }
     }
 }
 
